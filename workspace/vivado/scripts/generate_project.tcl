@@ -1,5 +1,5 @@
 # Insert the location of the project on your disk, this include the name of the project folder
-set projectDir C:/Users/Mani/Documents/Projects/FPGA/Training_SPI_slave
+set projectDir D:/FPGA/Projects/SystemVerilog-Ethernet-Wrapped
 # The full part name for use when generating the project
 set fullPartName xc7a100tcsg324-1
 # The part name that appears in the hardware manager to upload the bitstream to the FPGA
@@ -9,16 +9,19 @@ cd $projectDir/workspace/vivado/scripts
 set outputDir ../projectflow
 file mkdir $outputDir
 
-create_project littleriscy ./$outputDir -part $fullPartName -force
+create_project SystemVerilog-Ethernet-Wrapped ./$outputDir -part $fullPartName -force
 
-add_files $projectDir/rtl/syn/littleriscy_core
+# Add files to the project - either the folder containing the files or the files themselves
+add_files $projectDir/rtl/syn/axi-steam
+add_files $projectDir/rtl/syn/top.sv
+
 # Change this line if using some other constraint file
 add_files -fileset constrs_1 $projectDir/rtl/constraints/Arty-A7-100-Master.xdc
 import_files -force -norecurse
 set_property top top [current_fileset]
 update_compile_order -fileset sources_1
 
-# Synthesize, implement and upload bitstream to device, uncomment to use
+# Synthesize, implement and upload bitstream to device, uncomment to automate
 # launch_runs synth_1
 # wait_on_run synth_1
 # 
