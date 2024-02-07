@@ -1,0 +1,63 @@
+/**
+ * @file mii_if.sv
+ *
+ * @author Mani Magnusson
+ * @date   2024
+ *
+ * @brief MII Interface Definition, skips CRS and COL lines
+ */
+
+`default_nettype none
+
+interface MII_IF # (
+    // No parameters
+);
+    var logic       tx_clk;
+    var logic [3:0] txd;
+    var logic       tx_en;
+    var logic       tx_er;
+
+    var logic       rx_clk;
+    var logic [3:0] rxd;
+    var logic       rx_dv;
+    var logic       rx_er;
+
+    modport MAC (
+        input tx_clk,
+        output txd,
+        output tx_en,
+        output tx_er,
+        
+        input rx_clk,
+        input rxd,
+        input rx_dv,
+        input rx_er
+    );
+
+    modport PHY (
+        output tx_clk,
+        input txd,
+        input tx_en,
+        input tx_er,
+        
+        output rx_clk,
+        output rxd,
+        output rx_dv,
+        output rx_er
+    );
+
+    modport Monitor (
+        input tx_clk,
+        input txd,
+        input rx_en,
+        input tx_er,
+        
+        input rx_clk,
+        input rxd,
+        input rx_dv,
+        input rx_er
+    );
+
+endinterface
+
+`default_nettype wire
