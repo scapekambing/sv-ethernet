@@ -1,0 +1,361 @@
+/**
+ * @file axil_bfm.sv
+ *
+ * @author Mani Magnusson
+ * @date   2023
+ *
+ * @brief AXI4-Lite bus functional model
+ */
+
+/* TODO:
+ *  - Add parameterization
+ *  - Option to have READY deassert before VALID is asserted (allowed in spec)
+*/
+
+`timescale 1ns / 1ps
+`default_nettype none
+
+package axil_bfm;
+class AXIL_Slave_BFM #();
+    virtual AXIL_IF axil_if;
+
+    int rand_wait_max = 10; //ns
+    bit use_random_wait = 0;
+
+    function new(input virtual AXIL_IF axil_if_in, input bit use_random_wait_in);
+        axil_if = axil_if_in;
+        use_random_wait = use_random_wait_in;
+    endfunction
+
+    // Set all slave outputs to zero
+    task automatic reset_task();
+        this.axil_if.awready <= '0;
+        this.axil_if.wready <= '0;
+        this.axil_if.bresp <= '0;
+        this.axil_if.bvalid <= '0;
+        this.axil_if.arready <= '0;
+        this.axil_if.rdata <= '0;
+        this.axil_if.rresp <= '0;
+        this.axil_if.rvalid <= '0;
+    endtask
+
+    task automatic awtransfer(
+        ref var logic clk,
+        output var logic [31:0] address,
+        output var logic [2:0] awprot
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Slave] awtransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.awready <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.awvalid === 1'b0);
+        
+        address = this.axil_if.awaddr;
+        awprot = this.axil_if.awprot;
+        this.axil_if.awready <= '0;
+    endtask
+
+    task automatic wtransfer(
+        ref var logic clk,
+        output var logic [31:0] data,
+        output var logic [3:0] strobe
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Slave] wtransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.wready <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.wvalid  === 1'b0);
+        
+        data = this.axil_if.wdata;
+        strobe = this.axil_if.wstrb;
+        this.axil_if.wready <= '0;
+    endtask
+
+    task automatic btransfer(
+        ref var logic clk,
+        input var logic [1:0] bresp = this.axil_if.AXI_RESP_OKAY
+    );  
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Slave] btransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.bresp <= bresp;
+        this.axil_if.bvalid <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.bready  === 1'b0);
+        
+        this.axil_if.bvalid <= '0;
+    endtask
+
+    task automatic artransfer(
+        ref var logic clk,
+        output var logic [31:0] address,
+        output var logic [2:0] arprot
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Slave] artransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.arready <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.arvalid === 1'b0);
+        
+        address = this.axil_if.araddr;
+        arprot = this.axil_if.arprot;
+        this.axil_if.arready <= '0;
+    endtask
+
+    task automatic rtransfer(
+        ref var logic clk,
+        input var logic [31:0] data,
+        input var logic [1:0] rresp = this.axil_if.AXI_RESP_OKAY
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Slave] rtransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.rdata <= data;
+        this.axil_if.rresp <= rresp;
+        this.axil_if.rvalid <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.rready === 1'b0);
+        
+        this.axil_if.rvalid <= '0;
+    endtask
+
+    // Write transaction (slave receives an address and data)
+    task automatic write(
+        ref var logic clk,
+        output var logic [31:0] address,
+        output var logic [31:0] data,
+        output var logic [3:0] strobe,
+        output var logic [2:0] awprot,
+        input var logic [1:0] bresp = this.axil_if.AXI_RESP_OKAY
+    );
+
+        // Fork join because W channel could arrive before AW channel, or they could come simultaneously
+        fork
+            // Do an AW transfer
+            begin
+                awtransfer(clk, address, awprot);
+            end
+
+            // Do a W transfer
+            begin
+                wtransfer(clk, data, strobe);
+            end
+        join
+
+        // Respond on the B channel
+        btransfer(clk, bresp);
+    endtask
+endclass
+
+class AXIL_Master_BFM #();
+    virtual AXIL_IF axil_if;
+
+    int rand_wait_max = 10; //ns
+    bit use_random_wait = 0;
+
+    function new(input virtual AXIL_IF axil_if_in, input bit use_random_wait_in);
+        axil_if = axil_if_in;
+        use_random_wait = use_random_wait_in;
+    endfunction
+
+    task automatic reset_task();
+        this.axil_if.awvalid <= '0;
+        this.axil_if.awaddr <= '0;
+        this.axil_if.awprot <= '0;
+
+        this.axil_if.wvalid <= '0;
+        this.axil_if.wdata <= '0;
+        this.axil_if.wstrb <= '0;
+        
+        this.axil_if.bready <= '0;
+        
+        this.axil_if.arvalid <= '0;
+        this.axil_if.araddr <= '0;
+        this.axil_if.arprot <= '0;
+
+        this.axil_if.rready <= '0;
+    endtask
+
+    task automatic awtransfer(
+        ref var logic clk,
+        input var logic [31:0] address = '0,
+        input var logic [2:0] awprot = this.axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Master] awtransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.awaddr <= address;
+        this.axil_if.awprot <= awprot;
+        this.axil_if.awvalid <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.awready === 1'b0);
+        
+        this.axil_if.awvalid <= '0;
+        this.axil_if.awaddr <= '0;
+        this.axil_if.awprot <= '0;
+    endtask
+
+    task automatic wtransfer(
+        ref var logic clk,
+        input var logic [31:0] data = '0,
+        input var logic [3:0] strobe = '1
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Master] wtransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.wdata <= data;
+        this.axil_if.wstrb <= strobe;
+        this.axil_if.wvalid <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.wready  === 1'b0);
+        
+        this.axil_if.wvalid <= '0;
+        this.axil_if.wdata <= '0;
+        this.axil_if.wstrb <= '0;
+    endtask
+
+    task automatic btransfer(
+        ref var logic clk,
+        output var logic [1:0] bresp
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Master] btransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.bready <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.bvalid  === 1'b0);
+        
+        bresp = this.axil_if.bresp;
+        this.axil_if.bready <= '0;
+    endtask
+
+    task automatic artransfer(
+        ref var logic clk,
+        input var logic [31:0] address = '0,
+        input var logic [2:0] arprot = this.axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Master] artransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.araddr <= address;
+        this.axil_if.arprot <= arprot;
+        this.axil_if.arvalid <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.arready === 1'b0);
+        
+        this.axil_if.arvalid <= '0;
+        this.axil_if.araddr <= '0;
+        this.axil_if.arprot <= '0;
+    endtask
+
+    task automatic rtransfer(
+        ref var logic clk,
+        output var logic [31:0] data,
+        output var logic [1:0] rresp
+    );
+        if(use_random_wait) begin
+            int random_wait = $urandom_range(0,rand_wait_max);
+            $display("[AXIL BFM Master] rtransfer waiting %0d ns", random_wait);
+            repeat(random_wait) begin
+                @(posedge clk);
+            end
+        end
+        this.axil_if.rready <= '1;
+        do begin
+            @(posedge clk);
+        end while (this.axil_if.rvalid === 1'b0);
+        data = this.axil_if.rdata;
+        rresp = this.axil_if.rresp;
+        this.axil_if.rready <= '0;
+    endtask
+
+    task automatic write(
+        ref var logic clk,
+        input var logic [31:0] address = '0,
+        input var logic [2:0] prot = this.axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA,
+        input var logic [31:0] data = '0,
+        input var logic [3:0] strobe = '1,
+        input bit simultaneous = 0,
+        output var logic [1:0] response
+    );
+        if (simultaneous) begin
+            fork
+                begin
+                    awtransfer(clk, address, prot);
+                end
+
+                begin
+                    wtransfer(clk, data, strobe);
+                end
+            join
+        end else begin
+            awtransfer(clk, address, prot);
+            wtransfer(clk, data, strobe);
+        end
+        
+        // B transfer always comes last after AW and W transfers
+        btransfer(clk, response);
+    endtask
+
+    task automatic read(
+        ref var logic clk,
+        input var logic [31:0] address = '0,
+        input var logic [2:0] prot = this.axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA,
+        output var logic [31:0] data,
+        output var logic [1:0] response
+    );
+        artransfer(clk, address, prot);
+        rtransfer(clk, data, response);
+    endtask
+endclass
+endpackage
+
+`default_nettype wire
