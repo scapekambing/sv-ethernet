@@ -16,7 +16,7 @@ module eth_mac_mii_fifo_wrapper # (
     // Use BUFR for Virtex-5, Virtex-6, 7-Series
     // Use BUFG for Ultrascale
     // Use BUFIO2 for Spartan-6
-    parameter string CLOCK_INPUT_STYLE      = "BUFIO2",
+    parameter string CLOCK_INPUT_STYLE      = "BUFR",
     parameter bit ENABLE_PADDING            = '1,
     parameter int MIN_FRAME_LENGTH          = 64,
     parameter int TX_FIFO_DEPTH             = 4096,
