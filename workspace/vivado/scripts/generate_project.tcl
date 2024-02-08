@@ -1,5 +1,7 @@
 # Insert the location of the project on your disk, this include the name of the project folder
-set projectDir D:/FPGA/Projects/SystemVerilog-Ethernet-Wrapped
+set projectDir C:/Users/Mani/Documents/Projects/FPGA/Ethernet/SystemVerilog-Ethernet-Wrapped
+# Alternate paths:
+# D:/FPGA/Projects/SystemVerilog-Ethernet-Wrapped
 # The full part name for use when generating the project
 set fullPartName xc7a100tcsg324-1
 # The part name that appears in the hardware manager to upload the bitstream to the FPGA
@@ -12,7 +14,10 @@ file mkdir $outputDir
 create_project SystemVerilog-Ethernet-Wrapped ./$outputDir -part $fullPartName -force
 
 # Add files to the project - either the folder containing the files or the files themselves
-add_files $projectDir/rtl/syn/axi-steam
+add_files $projectDir/lib/verilog-ethernet/lib
+add_files $projectDir/lib/verilog-ethernet/rtl
+add_files $projectDir/rtl/syn/axi-stream
+add_files $projectDir/rtl/syn/ethernet
 add_files $projectDir/rtl/syn/top.sv
 
 # Change this line if using some other constraint file
