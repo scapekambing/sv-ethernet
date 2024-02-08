@@ -61,6 +61,26 @@ initial begin
     else $error("Assertion in %m failed, tx_axis_if and rx_axis_if TDATA_WIDTH don't match");
 end
 
+initial begin
+    assert (tx_axis_if.TID_WIDTH == rx_axis_if.TID_WIDTH && tx_axis_if.TID_WIDTH == 0)
+    else $error("Assertion in %m failed, tx_axis_if and rx_axis_if TID_WIDTH should be 0");
+end
+
+initial begin
+    assert (tx_axis_if.TUSER_WIDTH == rx_axis_if.TUSER_WIDTH && tx_axis_if.TUSER_WIDTH == 1)
+    else $error("Assertion in %m failed, tx_axis_if and rx_axis_if TUSER_WIDTH should be 1");
+end
+
+initial begin
+    assert (tx_axis_if.TDEST_WIDTH == rx_axis_if.TDEST_WIDTH && tx_axis_if.TDEST_WIDTH == 0)
+    else $error("Assertion in %m failed, tx_axis_if and rx_axis_if TDEST_WIDTH should be 0");
+end
+
+initial begin
+    assert (tx_axis_if.TWAKEUP_ENABLE == rx_axis_if.TWAKEUP_ENABLE && tx_axis_if.TWAKEUP_ENABLE == 0)
+    else $error("Assertion in %m failed, tx_axis_if and rx_axis_if TWAKEUP_ENABLE should be 0");
+end
+
 eth_mac_mii_fifo # (
     .TARGET(TARGET),
     .CLOCK_INPUT_STYLE(CLOCK_INPUT_STYLE),
