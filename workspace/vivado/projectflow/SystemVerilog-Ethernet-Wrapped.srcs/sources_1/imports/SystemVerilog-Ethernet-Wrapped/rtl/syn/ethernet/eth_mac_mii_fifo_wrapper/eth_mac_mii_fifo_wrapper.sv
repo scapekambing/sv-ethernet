@@ -37,7 +37,7 @@ module eth_mac_mii_fifo_wrapper # (
     input var logic         phy_reset,
 
     AXIS_IF.Receiver        tx_axis_if,
-    AXIS_ID.Transmitter     rx_axis_if,
+    AXIS_IF.Transmitter     rx_axis_if,
     MII_IF.MAC              mii_if,
 
     output var logic        tx_error_underflow,
