@@ -15,6 +15,7 @@ interface MII_IF # (
     var logic       tx_clk;
     var logic [3:0] txd;
     var logic       tx_en;
+    var logic       tx_er;
 
     var logic       rx_clk;
     var logic [3:0] rxd;
@@ -27,6 +28,7 @@ interface MII_IF # (
         input tx_clk,
         output txd,
         output tx_en,
+        output tx_er,
         
         input rx_clk,
         input rxd,
@@ -40,6 +42,7 @@ interface MII_IF # (
         output tx_clk,
         input txd,
         input tx_en,
+        input tx_er,
         
         output rx_clk,
         output rxd,
@@ -53,6 +56,7 @@ interface MII_IF # (
         input tx_clk,
         input txd,
         input rx_en,
+        input tx_er,
         
         input rx_clk,
         input rxd,
