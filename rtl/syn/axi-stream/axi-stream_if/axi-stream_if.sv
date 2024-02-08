@@ -28,7 +28,7 @@ interface AXIS_IF # (
     var logic                                           tlast;
     var logic [(TID_WIDTH > 0 ? TID_WIDTH : 1)-1:0]     tid;    // Ensure bit width doesn't become negative
     var logic [(TDEST_WIDTH > 0 ? TDEST_WIDTH : 1)-1:0] tdest;  // Ensure bit width doesn't become negative
-    var logic [(TUSER WIDTH > 0 ? TUSER_WIDTH : 1)-1:0] tuser;  // Ensure bit width doesn't become negative
+    var logic [(TUSER_WIDTH > 0 ? TUSER_WIDTH : 1)-1:0] tuser;  // Ensure bit width doesn't become negative
     var logic                                           twakeup;
 
     modport Transmitter (

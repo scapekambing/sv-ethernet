@@ -154,6 +154,6 @@ module top #(
         .clk(clk_int),
         .reset(rst_int),
         .mii_if(mii_if.MAC)
-    )
+    );
 
 endmodule

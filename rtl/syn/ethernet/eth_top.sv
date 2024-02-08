@@ -19,7 +19,7 @@ module eth_top # (
 );
    AXIS_IF loopback_axis_if();
 
-   eth_mac_mii_fifo_wrapper (
+   eth_mac_mii_fifo_wrapper # (
       .TARGET(TARGET)
    ) eth_mac_mii_fifo_wrapper_inst (
       .clk(clk),
