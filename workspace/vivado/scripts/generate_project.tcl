@@ -1,5 +1,5 @@
 # Insert the location of the project on your disk, this include the name of the project folder
-set projectDir C:/Users/Mani/Documents/Projects/FPGA/Ethernet/SystemVerilog-Ethernet-Wrapped
+set projectDir C:/FPGA/SystemVerilog-Ethernet-Wrapped
 # Alternate paths:
 # D:/FPGA/Projects/SystemVerilog-Ethernet-Wrapped
 # The full part name for use when generating the project
