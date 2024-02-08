@@ -50,7 +50,7 @@ interface AXIS_IF # (
         output tready,
 
         input tdata,
-        input tsrb,
+        input tstrb,
         input tkeep,
         input tlast,
         input tid,

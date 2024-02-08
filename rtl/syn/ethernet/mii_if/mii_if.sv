@@ -55,7 +55,7 @@ interface MII_IF # (
     modport Monitor (
         input tx_clk,
         input txd,
-        input rx_en,
+        input tx_en,
         input tx_er,
         
         input rx_clk,

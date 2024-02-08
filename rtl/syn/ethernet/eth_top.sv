@@ -17,7 +17,10 @@ module eth_top # (
 
    MII_IF.MAC mii_if
 );
-   AXIS_IF loopback_axis_if();
+   AXIS_IF #(
+      .TDATA_WIDTH(8),
+      .TUSER_WIDTH(1)
+   ) loopback_axis_if();
 
    eth_mac_mii_fifo_wrapper # (
       .TARGET(TARGET)
