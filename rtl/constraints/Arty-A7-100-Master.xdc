@@ -47,22 +47,22 @@ set_false_path -to [get_ports {led4 led5 led6 led7}]
 set_output_delay 0 [get_ports {led4 led5 led6 led7}]
 
 ## Switches
-set_property -dict {LOC A8  IOSTANDARD LVCMOS33} [get_ports {sw[0]}]
-set_property -dict {LOC C11 IOSTANDARD LVCMOS33} [get_ports {sw[1]}]
-set_property -dict {LOC C10 IOSTANDARD LVCMOS33} [get_ports {sw[2]}]
-set_property -dict {LOC A10 IOSTANDARD LVCMOS33} [get_ports {sw[3]}]
+#set_property -dict {LOC A8  IOSTANDARD LVCMOS33} [get_ports {sw[0]}]
+#set_property -dict {LOC C11 IOSTANDARD LVCMOS33} [get_ports {sw[1]}]
+#set_property -dict {LOC C10 IOSTANDARD LVCMOS33} [get_ports {sw[2]}]
+#set_property -dict {LOC A10 IOSTANDARD LVCMOS33} [get_ports {sw[3]}]
 
-set_false_path -from [get_ports {sw[*]}]
-set_input_delay 0 [get_ports {sw[*]}]
+#set_false_path -from [get_ports {sw[*]}]
+#set_input_delay 0 [get_ports {sw[*]}]
 
 ## Buttons
-set_property -dict {LOC D9  IOSTANDARD LVCMOS33} [get_ports {btn[0]}]
-set_property -dict {LOC C9  IOSTANDARD LVCMOS33} [get_ports {btn[1]}]
-set_property -dict {LOC B9  IOSTANDARD LVCMOS33} [get_ports {btn[2]}]
-set_property -dict {LOC B8  IOSTANDARD LVCMOS33} [get_ports {btn[3]}]
+#set_property -dict {LOC D9  IOSTANDARD LVCMOS33} [get_ports {btn[0]}]
+#set_property -dict {LOC C9  IOSTANDARD LVCMOS33} [get_ports {btn[1]}]
+#set_property -dict {LOC B9  IOSTANDARD LVCMOS33} [get_ports {btn[2]}]
+#set_property -dict {LOC B8  IOSTANDARD LVCMOS33} [get_ports {btn[3]}]
 
-set_false_path -from [get_ports {btn[*]}]
-set_input_delay 0 [get_ports {btn[*]}]
+#set_false_path -from [get_ports {btn[*]}]
+#set_input_delay 0 [get_ports {btn[*]}]
 
 ## PMOD JA
 #set_property -dict {LOC G13 IOSTANDARD LVCMOS33 SLEW FAST DRIVE 12} [get_ports {gpio_ja1}] ;# PMOD JA pin 1
