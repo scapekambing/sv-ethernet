@@ -32,7 +32,7 @@ module eth_top # (
       .tx_axis_if(loopback_axis_if.Receiver),
       .rx_axis_if(loopback_axis_if.Transmitter),
 
-      .mii_if(mii_if.MAC),
+      .mii_if(mii_if),
 
       .tx_error_underflow(),
       .tx_fifo_overflow(),
