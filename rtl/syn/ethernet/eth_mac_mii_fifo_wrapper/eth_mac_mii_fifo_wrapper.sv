@@ -113,7 +113,7 @@ module eth_mac_mii_fifo_wrapper # (
         .tx_axis_tuser(tx_axis_if.tuser),
 
         .rx_axis_tdata(rx_axis_if.tdata),
-        .rx_axis_tkeep(tx_axis_if.tkeep),
+        .rx_axis_tkeep(rx_axis_if.tkeep),
         .rx_axis_tvalid(rx_axis_if.tvalid),
         .rx_axis_tready(rx_axis_if.tready),
         .rx_axis_tlast(rx_axis_if.tlast),

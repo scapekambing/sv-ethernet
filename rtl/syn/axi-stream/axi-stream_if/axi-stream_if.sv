@@ -24,7 +24,7 @@ interface AXIS_IF # (
     var logic                                           tready;
     var logic [(TDATA_WIDTH > 0 ? TDATA_WIDTH : 1)-1:0] tdata;  // Ensure bit width doesn't become negative
     var logic [(TSTRB_WIDTH > 0 ? TSTRB_WIDTH : 1)-1:0] tstrb;  // Ensure bit width doesn't become negative
-    var logic [(TSTRB_WIDTH > 0 ? TSTRB_WIDTH : 1)-1:0] tkeep;  // Ensure bit width doesn't become negative
+    var logic [(TKEEP_WIDTH > 0 ? TKEEP_WIDTH : 1)-1:0] tkeep;  // Ensure bit width doesn't become negative
     var logic                                           tlast;
     var logic [(TID_WIDTH > 0 ? TID_WIDTH : 1)-1:0]     tid;    // Ensure bit width doesn't become negative
     var logic [(TDEST_WIDTH > 0 ? TDEST_WIDTH : 1)-1:0] tdest;  // Ensure bit width doesn't become negative
