@@ -36,7 +36,7 @@ module top #(
     output var logic        phy_tx_en,
     input var logic         phy_col,
     input var logic         phy_crs,
-    input var logic         phy_reset_n,
+    output var logic        phy_reset_n,
 
     input var logic         uart_rxd,
     output var logic        uart_txd
@@ -133,9 +133,12 @@ module top #(
         .N(4)
     ) sync_reset_inst (
         .clk(clk_int),
-        .rst(-mmcm_locked),
+        .rst(~mmcm_locked),
         .out(rst_int)
     );
+
+    assign phy_ref_clk = clk_25mhz_int;
+    assign phy_reset_n = !rst;
 
     MII_IF mii_if();
     assign mii_if.tx_clk = phy_tx_clk;
