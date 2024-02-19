@@ -97,6 +97,13 @@ module eth_axis_rx_wrapper # (
         .clk(clk),
         .rst(reset),
 
+        .s_axis_tdata(mii_axis_if.tdata),
+        .s_axis_tkeep(mii_axis_if.tkeep),
+        .s_axis_tvalid(mii_axis_if.tvalid),
+        .s_axis_tready(mii_axis_if.tready),
+        .s_axis_tlast(mii_axis_if.tlast),
+        .s_axis_tuser(mii_axis_if.tuser),
+
         .m_eth_hdr_valid(eth_header_out_if.valid),
         .m_eth_hdr_ready(eth_header_out_if.ready),
         .m_eth_hdr_dest_mac(eth_header_out_if.dest_mac),
