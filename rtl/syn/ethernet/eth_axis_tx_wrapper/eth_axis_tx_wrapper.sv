@@ -7,11 +7,6 @@
  * @brief Wrapper for eth_axis_tx.v from Alex Forencich
  */
 
-/* TODO:
- *  - Change such that the mii_axis_if TKEEP_ENABLE parameter is the "master"
- *  - Change such that the mii_axis_if TDATA_WIDTH parameter is the "master"
- */
-
 `default_nettype none
 
 module eth_axis_tx_wrapper # (
