@@ -116,7 +116,7 @@ module eth_top # (
       .clk(clk),
       .reset(reset),
 
-      .mii_axis_if(mii_tx_axis_if.Receiver),
+      .mii_axis_if(mii_rx_axis_if.Receiver),
 
       // Temporary port connections for loopback
       .eth_header_out_if(loopback_eth_header_if.Transmitter),

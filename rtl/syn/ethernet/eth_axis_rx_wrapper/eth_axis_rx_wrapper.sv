@@ -101,9 +101,9 @@ module eth_axis_rx_wrapper # (
 
         .m_eth_hdr_valid(eth_header_out_if.valid),
         .m_eth_hdr_ready(eth_header_out_if.ready),
-        .m_eth_hdr_dest_mac(eth_header_out_if.dest_mac),
-        .m_eth_hdr_src_mac(eth_header_out_if.src_mac),
-        .m_eth_hdr_type(eth_header_out_if.eth_type),
+        .m_eth_dest_mac(eth_header_out_if.dest_mac),
+        .m_eth_src_mac(eth_header_out_if.src_mac),
+        .m_eth_type(eth_header_out_if.eth_type),
 
         .m_eth_payload_axis_tdata(eth_payload_out_if.tdata),
         .m_eth_payload_axis_tkeep(eth_payload_out_if.tkeep),

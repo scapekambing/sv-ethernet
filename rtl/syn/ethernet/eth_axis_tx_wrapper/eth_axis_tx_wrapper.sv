@@ -83,11 +83,11 @@ module eth_axis_tx_wrapper # (
         else $error("Assertion in %m failed,eth_payload_ins_if TWAKEUP_ENABLE should be 0");
     end
 
-    eth_axis_rx # (
+    eth_axis_tx # (
         .DATA_WIDTH(DATA_WIDTH),
         .KEEP_ENABLE(KEEP_ENABLE),
         .KEEP_WIDTH(DATA_WIDTH / 8)
-    ) eth_axis_rx_inst (
+    ) eth_axis_tx_inst (
         .clk(clk),
         .rst(reset),
 
@@ -100,9 +100,9 @@ module eth_axis_tx_wrapper # (
 
         .s_eth_hdr_valid(eth_header_in_if.valid),
         .s_eth_hdr_ready(eth_header_in_if.ready),
-        .s_eth_hdr_dest_mac(eth_header_in_if.dest_mac),
-        .s_eth_hdr_src_mac(eth_header_in_if.src_mac),
-        .s_eth_hdr_type(eth_header_in_if.eth_type),
+        .s_eth_dest_mac(eth_header_in_if.dest_mac),
+        .s_eth_src_mac(eth_header_in_if.src_mac),
+        .s_eth_type(eth_header_in_if.eth_type),
 
         .s_eth_payload_axis_tdata(eth_payload_in_if.tdata),
         .s_eth_payload_axis_tkeep(eth_payload_in_if.tkeep),

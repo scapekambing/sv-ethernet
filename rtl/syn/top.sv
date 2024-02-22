@@ -138,7 +138,7 @@ module top #(
     );
 
     assign phy_ref_clk = clk_25mhz_int;
-    assign phy_reset_n = !rst;
+    assign phy_reset_n = !rst_int;
 
     MII_IF mii_if();
     assign mii_if.tx_clk = phy_tx_clk;
