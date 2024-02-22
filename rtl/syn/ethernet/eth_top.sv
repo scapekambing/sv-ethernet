@@ -80,15 +80,6 @@ module eth_top # (
       .cfg_rx_enable(1'b1)
    );
 
-   /* TEMPORARY LOOPBACK CODE */
-   AXIS_IF # (
-      .TDATA_WIDTH(AXIS_TDATA_WIDTH),
-      .TUSER_WIDTH(1),
-      .TKEEP_ENABLE(AXIS_TKEEP_ENABLE)
-   ) loopback_eth_payload_if();
-
-   ETH_HEADER_IF loopback_eth_header_if();
-
    eth_axis_tx_wrapper # (
       .DATA_WIDTH(AXIS_TDATA_WIDTH),
       .KEEP_ENABLE(AXIS_TKEEP_ENABLE)
@@ -98,13 +89,8 @@ module eth_top # (
 
       .mii_axis_if(mii_tx_axis_if.Transmitter),
 
-      // Temporary port connections for loopback
-      .eth_header_in_if(loopback_eth_header_if.Receiver),
-      .eth_payload_in_if(loopback_eth_payload_if.Receiver),
-
-      // Port connections for actual use
-      //.eth_header_in_if(input_eth_header_if.Receiver),
-      //.eth_payload_in_if(input_eth_payload_if.Receiver),
+      .eth_header_in_if(input_eth_header_if.Receiver),
+      .eth_payload_in_if(input_eth_payload_if.Receiver),
 
       .busy()
    );
@@ -117,14 +103,9 @@ module eth_top # (
       .reset(reset),
 
       .mii_axis_if(mii_rx_axis_if.Receiver),
-
-      // Temporary port connections for loopback
-      .eth_header_out_if(loopback_eth_header_if.Transmitter),
-      .eth_payload_out_if(loopback_eth_payload_if.Transmitter),
-
-      // Port connections for actual use
-      //.eth_header_out_if(output_eth_header_if.Transmitter),
-      //.eth_payload_out_if(output_eth_payload_if.Transmitter),
+   
+      .eth_header_out_if(output_eth_header_if.Transmitter),
+      .eth_payload_out_if(output_eth_payload_if.Transmitter),
 
       .busy(),
       .error_header_early_termination()
