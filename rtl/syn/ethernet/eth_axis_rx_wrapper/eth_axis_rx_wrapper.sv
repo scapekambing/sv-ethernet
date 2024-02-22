@@ -19,7 +19,7 @@ module eth_axis_rx_wrapper # (
     AXIS_IF.Receiver            mii_axis_if,
     
     ETH_HEADER_IF.Transmitter   eth_header_out_if,
-    AXIS_IF.Transmitter         eth_payload_out_if
+    AXIS_IF.Transmitter         eth_payload_out_if,
 
     output var logic            busy,
     output var logic            error_header_early_termination
@@ -103,7 +103,7 @@ module eth_axis_rx_wrapper # (
         .m_eth_hdr_ready(eth_header_out_if.ready),
         .m_eth_hdr_dest_mac(eth_header_out_if.dest_mac),
         .m_eth_hdr_src_mac(eth_header_out_if.src_mac),
-        .m_eth_hdr_type(eth_header_out_if.type),
+        .m_eth_hdr_type(eth_header_out_if.eth_type),
 
         .m_eth_payload_axis_tdata(eth_payload_out_if.tdata),
         .m_eth_payload_axis_tkeep(eth_payload_out_if.tkeep),

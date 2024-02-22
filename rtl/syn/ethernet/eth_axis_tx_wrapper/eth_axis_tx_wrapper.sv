@@ -19,9 +19,9 @@ module eth_axis_tx_wrapper # (
     AXIS_IF.Transmitter         mii_axis_if,
     
     ETH_HEADER_IF.Receiver      eth_header_in_if,
-    AXIS_IF.Receiver            eth_payload_in_if
+    AXIS_IF.Receiver            eth_payload_in_if,
 
-    output var logic            busy,
+    output var logic            busy
 );
     initial begin
         assert (mii_axis_if.TDATA_WIDTH == 8)
@@ -102,7 +102,7 @@ module eth_axis_tx_wrapper # (
         .s_eth_hdr_ready(eth_header_in_if.ready),
         .s_eth_hdr_dest_mac(eth_header_in_if.dest_mac),
         .s_eth_hdr_src_mac(eth_header_in_if.src_mac),
-        .s_eth_hdr_type(eth_header_in_if.type),
+        .s_eth_hdr_type(eth_header_in_if.eth_type),
 
         .s_eth_payload_axis_tdata(eth_payload_in_if.tdata),
         .s_eth_payload_axis_tkeep(eth_payload_in_if.tkeep),

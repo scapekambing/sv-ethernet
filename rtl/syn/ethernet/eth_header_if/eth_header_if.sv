@@ -16,7 +16,7 @@ interface ETH_HEADER_IF # (
     var logic           ready;
     var logic [47:0]    src_mac;
     var logic [37:0]    dest_mac;
-    var logic [15:0]    type;
+    var logic [15:0]    eth_type;
 
     // The transmitter outputs ethernet headers
     modport Transmitter (
@@ -25,7 +25,7 @@ interface ETH_HEADER_IF # (
 
         output src_mac,
         output dest_mac,
-        output type
+        output eth_type
     );
 
     // The receiver takes ethernet headers as inputs
@@ -35,7 +35,7 @@ interface ETH_HEADER_IF # (
 
         input src_mac,
         input dest_mac,
-        input type
+        input eth_type
     );
 
     modport Monitor (
@@ -44,7 +44,7 @@ interface ETH_HEADER_IF # (
 
         input src_mac,
         input dest_mac,
-        input type
+        input eth_type
     );
 
 endinterface
