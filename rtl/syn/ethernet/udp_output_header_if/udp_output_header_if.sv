@@ -72,9 +72,13 @@ interface UDP_OUTPUT_HEADER_IF # (
         output hdr_valid,
         input hdr_ready,
 
+        output eth_dest_mac,
+        output eth_src_mac,
+        output eth_type,
+
         output ip_version,
         output ip_ihl,
-        output ip_dscp
+        output ip_dscp,
         output ip_ecn,
         output ip_length,
         output ip_identification,
@@ -84,7 +88,7 @@ interface UDP_OUTPUT_HEADER_IF # (
         output ip_protocol,
         output ip_header_checksum,
         output ip_source_ip,
-        output dest_ip,
+        output ip_dest_ip,
 
         output source_port,
         output dest_port,

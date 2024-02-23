@@ -38,8 +38,8 @@ interface IP_OUTPUT_HEADER_IF # (
         input hdr_valid,
         output hdr_ready,
 
-        input dest_mac,
-        input src_mac,
+        input eth_dest_mac,
+        input eth_src_mac,
         input eth_type,
         input version,
         input ihl,
@@ -61,8 +61,8 @@ interface IP_OUTPUT_HEADER_IF # (
         output hdr_valid,
         input hdr_ready,
 
-        output dest_mac,
-        output src_mac,
+        output eth_dest_mac,
+        output eth_src_mac,
         output eth_type,
         output version,
         output ihl,
@@ -84,8 +84,8 @@ interface IP_OUTPUT_HEADER_IF # (
         input hdr_valid,
         input hdr_ready,
 
-        input dest_mac,
-        input src_mac,
+        input eth_dest_mac,
+        input eth_src_mac,
         input eth_type,
         input version,
         input ihl,

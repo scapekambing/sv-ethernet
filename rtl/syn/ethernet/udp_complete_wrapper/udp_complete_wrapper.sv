@@ -19,7 +19,7 @@ module udp_complete_wrapper # (
    parameter int       UDP_CHECKSUM_HEADER_FIFODEPTH = 8
 ) (
    input var logic clk,
-   input var logic reset
+   input var logic reset,
 
    /* Ethernet frame input */
    ETH_HEADER_IF.Receiver input_eth_header_if,
@@ -113,13 +113,13 @@ module udp_complete_wrapper # (
     end
 
     initial begin
-        assert (input_eth_payload_if.TKEEP_ENABLE == 1 &&
-                output_eth_payload_if.TKEEP_ENABLE == 1 &&
-                ip_input_payload_if.TKEEP_ENABLE == 1 &&
-                ip_output_payload_if.TKEEP_ENABLE == 1 &&
-                udp_input_payload_if.TKEEP_ENABLE == 1 &&
-                udp_output_payload_if.TKEEP_ENABLE == 1)
-        else $error("Assertion in %m failed, TKEEP_ENABLE parameter in the AXIS interfaces should be 1");
+        assert (input_eth_payload_if.TKEEP_ENABLE == 0 &&
+                output_eth_payload_if.TKEEP_ENABLE == 0 &&
+                ip_input_payload_if.TKEEP_ENABLE == 0 &&
+                ip_output_payload_if.TKEEP_ENABLE == 0 &&
+                udp_input_payload_if.TKEEP_ENABLE == 0 &&
+                udp_output_payload_if.TKEEP_ENABLE == 0)
+        else $error("Assertion in %m failed, TKEEP_ENABLE parameter in the AXIS interfaces should be 0");
     end
 
     initial begin
@@ -136,8 +136,8 @@ module udp_complete_wrapper # (
       .clk(clk),
       .rst(reset),
 
-      .s_eth_hdr_valid(input_eth_header_if.hdr_valid),
-      .s_eth_hdr_ready(input_eth_header_if.hdr_ready),
+      .s_eth_hdr_valid(input_eth_header_if.valid),
+      .s_eth_hdr_ready(input_eth_header_if.ready),
       .s_eth_dest_mac(input_eth_header_if.dest_mac),
       .s_eth_src_mac(input_eth_header_if.src_mac),
       .s_eth_type(input_eth_header_if.eth_type),
@@ -147,11 +147,11 @@ module udp_complete_wrapper # (
       .s_eth_payload_axis_tlast(input_eth_payload_if.tlast),
       .s_eth_payload_axis_tuser(input_eth_payload_if.tuser),
 
-      .m_eth_hdr_valid(output_eth_header_if.hdr_valid),
-      .m_eth_hdr_ready(output_eth_header_if.hdr_ready),
+      .m_eth_hdr_valid(output_eth_header_if.valid),
+      .m_eth_hdr_ready(output_eth_header_if.ready),
       .m_eth_dest_mac(output_eth_header_if.dest_mac),
       .m_eth_src_mac(output_eth_header_if.src_mac),
-      .m_eth_type(output_eth_header_if.type),
+      .m_eth_type(output_eth_header_if.eth_type),
       .m_eth_payload_axis_tdata(output_eth_payload_if.tdata),
       .m_eth_payload_axis_tvalid(output_eth_payload_if.tvalid),
       .m_eth_payload_axis_tready(output_eth_payload_if.tready),
@@ -224,7 +224,7 @@ module udp_complete_wrapper # (
       .m_udp_ip_dscp(udp_output_header_if.ip_dscp),
       .m_udp_ip_ecn(udp_output_header_if.ip_ecn),
       .m_udp_ip_length(udp_output_header_if.ip_length),
-      .m_udp_ip_identificatioin(udp_output_header_if.ip_identification),
+      .m_udp_ip_identification(udp_output_header_if.ip_identification),
       .m_udp_ip_flags(udp_output_header_if.ip_flags),
       .m_udp_ip_fragment_offset(udp_output_header_if.ip_fragment_offset),
       .m_udp_ip_ttl(udp_output_header_if.ip_ttl),
