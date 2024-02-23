@@ -15,7 +15,7 @@ interface ETH_HEADER_IF # (
     var logic           valid;
     var logic           ready;
     var logic [47:0]    src_mac;
-    var logic [37:0]    dest_mac;
+    var logic [47:0]    dest_mac;
     var logic [15:0]    eth_type;
 
     // The transmitter outputs ethernet headers
