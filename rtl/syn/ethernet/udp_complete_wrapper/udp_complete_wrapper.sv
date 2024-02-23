@@ -72,6 +72,8 @@ module udp_complete_wrapper # (
    input var logic         clear_arp_cache
 );
 
+   // TODO: Add parameterization checks on interfaces
+
    udp_complete udp_complete_inst (
       .clk(clk),
       .rst(reset),
