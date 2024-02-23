@@ -156,7 +156,14 @@ module top #(
     ) eth_inst (
         .clk(clk_int),
         .reset(rst_int),
-        .mii_if(mii_if.MAC)
+
+        .mii_if(mii_if.MAC),
+
+        .local_mac(48'h02_00_00_00_00_00),
+        .local_ip({8'd192, 8'd168, 8'd1, 8'd128}),
+        .gateway_ip({8'd192, 8'd168, 8'd1, 8'd1}),
+        .subnet_mask({8'd255, 8'd255, 8'd255, 8'd0}),
+        .clear_arp_cache(0)
     );
 
 endmodule
