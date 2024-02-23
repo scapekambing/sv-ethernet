@@ -72,7 +72,65 @@ module udp_complete_wrapper # (
    input var logic         clear_arp_cache
 );
 
-   // TODO: Add parameterization checks on interfaces
+   initial begin
+        assert (input_eth_payload_if.TDATA_WIDTH == 8 &&
+                output_eth_payload_if.TDATA_WIDTH == 8 &&
+                ip_input_payload_if.TDATA_WIDTH == 8 &&
+                ip_output_payload_if.TDATA_WIDTH == 8 &&
+                udp_input_payload_if.TDATA_WIDTH == 8 &&
+                udp_output_payload_if.TDATA_WIDTH == 8)
+        else $error("Assertion in %m failed, TDATA_WIDTH parameter in the AXIS interfaces should be 8");
+    end
+
+    initial begin
+        assert (input_eth_payload_if.TID_WIDTH == 0 &&
+                output_eth_payload_if.TID_WIDTH == 0 &&
+                ip_input_payload_if.TID_WIDTH == 0 &&
+                ip_output_payload_if.TID_WIDTH == 0 &&
+                udp_input_payload_if.TID_WIDTH == 0 &&
+                udp_output_payload_if.TID_WIDTH == 0)
+        else $error("Assertion in %m failed, TID_WIDTH parameter in the AXIS interfaces should be 0");
+    end
+
+    initial begin
+        assert (input_eth_payload_if.TUSER_WIDTH == 1 &&
+                output_eth_payload_if.TUSER_WIDTH == 1 &&
+                ip_input_payload_if.TUSER_WIDTH == 1 &&
+                ip_output_payload_if.TUSER_WIDTH == 1 &&
+                udp_input_payload_if.TUSER_WIDTH == 1 &&
+                udp_output_payload_if.TUSER_WIDTH == 1)
+        else $error("Assertion in %m failed, TUSER_WIDTH parameter in the AXIS interfaces should be 1");
+    end
+
+    initial begin
+        assert (input_eth_payload_if.TDEST_WIDTH == 0 &&
+                output_eth_payload_if.TDEST_WIDTH == 0 &&
+                ip_input_payload_if.TDEST_WIDTH == 0 &&
+                ip_output_payload_if.TDEST_WIDTH == 0 &&
+                udp_input_payload_if.TDEST_WIDTH == 0 &&
+                udp_output_payload_if.TDEST_WIDTH == 0)
+        else $error("Assertion in %m failed, TDEST_WIDTH parameter in the AXIS interfaces should be 0");
+    end
+
+    initial begin
+        assert (input_eth_payload_if.TKEEP_ENABLE == 1 &&
+                output_eth_payload_if.TKEEP_ENABLE == 1 &&
+                ip_input_payload_if.TKEEP_ENABLE == 1 &&
+                ip_output_payload_if.TKEEP_ENABLE == 1 &&
+                udp_input_payload_if.TKEEP_ENABLE == 1 &&
+                udp_output_payload_if.TKEEP_ENABLE == 1)
+        else $error("Assertion in %m failed, TKEEP_ENABLE parameter in the AXIS interfaces should be 1");
+    end
+
+    initial begin
+        assert (input_eth_payload_if.TWAKEUP_ENABLE == 0 &&
+                output_eth_payload_if.TWAKEUP_ENABLE == 0 &&
+                ip_input_payload_if.TWAKEUP_ENABLE == 0 &&
+                ip_output_payload_if.TWAKEUP_ENABLE == 0 &&
+                udp_input_payload_if.TWAKEUP_ENABLE == 0 &&
+                udp_output_payload_if.TWAKEUP_ENABLE == 0)
+        else $error("Assertion in %m failed, TWAKEUP_ENABLE parameter in the AXIS interfaces should be 0");
+    end
 
    udp_complete udp_complete_inst (
       .clk(clk),
