@@ -20,15 +20,20 @@ module udp_axis_axil_bridge # (
     input var logic clk,
     input var logic reset,
 
-    UDP_OUTPUT_HEADER_IF.Input udp_header_input_if,
-    AXIS_IF.Receiver udp_payload_input_if,
+    UDP_OUTPUT_HEADER_IF.Output udp_header_input_if,
+    AXIS_IF.Transmitter udp_payload_input_if,
 
-    UDP_INPUT_HEADER_IF.Output udp_header_output_if,
-    AXIS_IF.Transmitter udp_payload_output_if,
+    UDP_INPUT_HEADER_IF.Input udp_header_output_if,
+    AXIS_IF.Receiver udp_payload_output_if,
 
     AXIL_IF.Master axil_if
 );
     /* Process requests */
+
+    var logic header_incoming, header_ok;
+
+    assign header_incoming = udp_header_input_if.hdr_valid;
+    assign header_ok = udp_header_input_if.hdr_ready; // Need to add check that packet length is n*64
 
     typedef enum logic [1:0] {
         REQUEST_STATE_IDLE,
@@ -45,6 +50,13 @@ module udp_axis_axil_bridge # (
 
     // Next logic
     always_comb begin
+        request_next_state = REQUEST_STATE_IDLE;
+        case (request_state)
+            REQUEST_STATE_IDLE              : if (header_incoming)  request_next_state = REQUEST_STATE_PROCESS_HEADER;
+                                              else                  request_next_state = REQUEST_STATE_IDLE;
+            REQUEST_STATE_PROCESS_HEADER    : if ()
+            REQUEST_STATE_PROCESS_REQUEST   : if ()
+        endcase
     end
 
     // Next output logic
