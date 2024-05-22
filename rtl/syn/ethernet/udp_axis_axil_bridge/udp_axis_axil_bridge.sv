@@ -15,8 +15,8 @@
 `default_nettype none
 
 module udp_axis_axil_bridge # (
-    parameter int REQUEST_BUFFER_SIZE = 64,
-    parameter int UDP_PORT = 1234
+    parameter bit [15:0] UDP_PORT = 1234,
+    parameter int REQUEST_BUFFER_SIZE = 64
 ) (
     input var logic clk,
     input var logic reset,
@@ -39,6 +39,11 @@ module udp_axis_axil_bridge # (
         At end of AXI-L transfers send the buffer back to the UDP module
     */
 
+    /* TODO:
+        Find a better name than just state_t for the high level SM states
+    */
+
+    // Opcode for what to do
     typedef enum logic [1:0] { 
         WRITE_DATA=0,
         READ_DATA=1,
@@ -52,102 +57,192 @@ module udp_axis_axil_bridge # (
         var logic [31:0] data;
     } request_t;
 
-    request_t [REQUEST_BUFFER_SIZE-1:0] requests;
+    typedef union packed {
+        request_t request;
+        var logic [7:0][7:0] byte;
+        // TODO: Add 64-bit representation
+    } request_union_t;
 
-    var logic port_match = udp_output_header_if.dest_port == UDP_PORT;
+    request_union_t [REQUEST_BUFFER_SIZE-1:0] requests;
+
+    // Fourth time is the charm??
+    // TODO: Add the rest of the states
+    typedef enum {
+        STATE_RX_HEADER,
+        STATE_RX_DISCARD,
+        STATE_RX_PAYLOAD,
+        STATE_PROCESS_REQUEST,
+        STATE_AXIL_READ_ADDRESS,
+        STATE_AXIL_READ_DATA,
+        STATE_AXIL_WRITE_ADDRESS,
+        STATE_AXIL_WRITE_DATA,
+        STATE_AXIL_WRITE_RESPONSE,
+        STATE_TX_HEADER,
+        STATE_TX_DATA
+    } state_t;
+
+    state_t state;
+
+    var logic [31:0] source_ip;
+    var logic [31:0] dest_ip;
+    var logic [15:0] source_port;
+    var logic [15:0] dest_port;
+    var logic [15:0] frame_length;
+
+    var logic [2:0] byte_id;
+    var logic [$clog2(REQUEST_BUFFER_SIZE)-1:0] request_id;
+    var logic [$clog2(REQUEST_BUFFER_SIZE)-1:0] request_count;
 
     always_ff @ (posedge clk) begin
         if (reset) begin
             // Reset signals
+            state = STATE_RX_HEADER;
         end else begin
-            // States? 
+            case (state)
+                // Read in a UDP header
+                STATE_RX_HEADER : begin
+                    udp_output_header_if.ready <= 1'b1;
+
+                    if (udp_output_header_if.hdr_valid && udp_output_header_if.hdr_ready) begin
+                        udp_output_header_if.ready <= 1'b0;
+
+                        source_ip <= udp_output_header_if.ip_source_ip;
+                        dest_ip <= udp_output_header_if.ip_dest_ip;
+                        source_port <= udp_output_header_if.source_port;
+                        dest_port <= udp_output_header_if.dest_port;
+                        frame_length <= udp_output_header_if.length;
+                        
+                        // TODO: Check if length % 64 == 0
+                        if (udp_output_header_if.dest_port == UDP_PORT) begin
+                            request_id <= '0;
+                            byte_id <= '0;
+                            state <= STATE_RX_PAYLOAD;
+                        end else begin
+                            state <= STATE_RX_DISCARD;
+                        end
+                    end
+                end
+
+                // Discard the packet, not for us.
+                STATE_RX_DISCARD : begin
+                    udp_payload_output_if.tready <= 1'b1;
+                    if (udp_payload_output_if.tvalid && udp_output_payload_if.tready && udp_output_payload_if.tlast) begin
+                        udp_output_payload_if.tready <= 1'b0;
+                        state <= STATE_RX_HEADER;
+                    end
+                end
+                
+                // Receive the payload and insert into request_t buffer
+                STATE_RX_PAYLOAD : begin
+                    udp_payload_output_if.tready <= 1'b1;
+
+                    if (udp_payload_output_if.tvalid && udp_payload_output_if.tready) begin
+                        // TODO: Check endianness if running into issues
+                        requests[request_id].byte[byte_id] <= udp_payload_output_if.tdata;
+                        
+                        if (byte_id == 8) begin
+                            byte_id <= '0;
+                            request_id <= request_id + 1;
+                        end
+                        
+                        if (udp_payload_output_if.tlast) begin
+                            if (udp_payload_output_if.tuser) begin
+                                // tuser indicates bad frame, ignore
+                                state <= STATE_RX_HEADER;
+                            end else begin
+                                request_count <= request_id;
+                                request_id <= '0;
+                                state <= STATE_PROCESS_REQUEST;
+                            end
+                        end
+                    end
+                end
+
+                // Process the requests we have
+                STATE_PROCESS_REQUEST : begin
+                    case (requests[request_id].request.opcode)
+                        WRITE_DATA : begin
+                            state <= STATE_AXIL_WRITE_ADDRESS;
+                        end
+
+                        READ_DATA : begin
+                            state <= STATE_AXIL_READ_ADDRESS;
+                        end
+
+                        default : begin
+                            // Invalid opcode, don't issue request
+                            requests[request_id].request.opcode <= requests[request_id].request.opcode & 2'b01;
+                            // Check if the invalid request was the last request in the list
+                            if (request_id == request_count) begin
+                                state <= STATE_TX_HEADER;
+                            end else begin
+                                request_id = request_id + 1;
+                            end
+                        end
+                    endcase
+                end
+
+                // AXI-Lite transfer
+                STATE_AXIL_READ_ADDRESS : begin
+                    axil_if.arvalid <= 1'b1;
+                    axil_if.arprot <= AXI_PROT_UNPRIVILEGED_NONSECURE_DATA;
+                    // Pad the msb with zeros
+                    axil_if.araddr <= {2'b0, requests[request_id].request.address};
+
+                    if (axil_if.arvalid && axil_if.arready) begin
+                        axil_if.arvalid <= 1'b0;
+                        state <= STATE_AXIL_READ_DATA;
+                    end
+                end
+                
+                // AXI-Lite transfer
+                STATE_AXIL_READ_DATA : begin
+                    axil_if.rready <= 1'b1;
+
+                    if (axil_if.rready && axil_if.rvalid) begin
+                        // TODO: Check rresp to see if the data is valid or not
+                        requests[request_id].request.data <= rdata;
+                        
+                        if (request_id == request_count) begin
+                            // TODO: Add more stuff that may be needed
+                            state <= STATE_TX_HEADER;
+                        end else begin
+                            request_id <= request_id + 1;
+                            state <= STATE_PROCESS_REQUEST;
+                        end
+                    end
+                end
+                
+                // AXI-Lite transfer
+                STATE_AXIL_WRITE_ADDRESS : begin
+                end
+                
+                // AXI-Lite transfer
+                STATE_AXIL_WRITE_DATA : begin
+                end
+                
+                // AXI-Lite transfer
+                STATE_AXIL_WRITE_RESPONSE : begin
+                    if (request_id == request_count) begin
+                        // TODO: Add more stuff that may be needed
+                        state <= STATE_TX_HEADER;
+                    end else begin
+                        request_id <= request_id + 1;
+                        state <= STATE_PROCESS_REQUEST;
+                    end
+                end
+
+                //
+                STATE_TX_HEADER : begin
+                end
+
+                //
+                STATE_TX_DATA : begin
+                end
+                
+            endcase
         end
-    end
-
-    /* TODO:
-        Find a better name than just state_t for the high level SM states
-
-    */
-
-    typedef enum logic [2:0] {
-        STATE_IDLE,
-        STATE_HEADER_READ,
-        STATE_STREAM_READ,
-        STATE_ISSUE_TRANSFERS,
-        STATE_HEADER_WRITE,
-        STATE_STREAM_WRITE
-    } state_t;
-
-    state_t state, next_state;
-
-    always_ff @ (posedge clk or posedge reset)
-        if (reset)  state <= STATE_IDLE;
-        else        state <= next_state;
-    
-    always_comb begin
-        next_state = STATE_IDLE;
-        case (state)
-            STATE_IDLE              : if ()     next_state = 
-                                      else      next_state = 
-            STATE_HEADER_READ       : if ()     next_state = 
-                                      else      next_state = 
-            STATE_STREAM_READ       : if ()     next_state = 
-                                      else      next_state = 
-            STATE_ISSUE_TRANSFERS   : if ()     next_state = 
-                                      else      next_state = 
-            STATE_HEADER_WRITE      : if ()     next_state = 
-                                      else      next_state = 
-            STATE_STREAM_WRITE      : if ()     next_state = 
-                                      else      next_state = 
-        endcase
-    end
-
-
-
-
-    /* OLDER CODE */
-    /* Process requests */
-
-    var logic header_incoming, header_ok;
-
-    assign header_incoming = udp_header_output_if.hdr_valid;
-    assign header_ok = udp_header_output_if.hdr_ready && udp_header_output_if.length % 64 == 0; // Need to add check that packet length is n*64
-
-    typedef enum logic [1:0] {
-        REQUEST_STATE_IDLE,
-        REQUEST_STATE_PROCESS_HEADER,
-        REQUEST_STATE_PROCESS_REQUEST
-    } request_state_t;
-
-    request_state_t request_state, request_next_state;
-
-    // Clock in next state
-    always_ff @(posedge clk or posedge reset)
-        if (reset)  request_state <= REQUEST_STATE_IDLE;
-        else        request_state <= request_next_state;
-
-    // Next state logic
-    always_comb begin
-        request_next_state = REQUEST_STATE_IDLE;
-        case (request_state)
-            REQUEST_STATE_IDLE              : if (header_incoming)  request_next_state = REQUEST_STATE_PROCESS_HEADER;
-                                              else                  request_next_state = REQUEST_STATE_IDLE;
-            REQUEST_STATE_PROCESS_HEADER    : if (header_ok)        request_next_state = REQUEST_STATE_PROCESS_REQUEST;
-                                              else                  request_next_state = REQUEST_STATE_IDLE;
-            REQUEST_STATE_PROCESS_REQUEST   : if ()
-        endcase
-    end
-
-    // Next output logic
-    always_comb begin
-    end
-
-    // Output registers
-    always_ff @(posedge clk or posedge reset)
-        if (reset) begin
-        else begin
-        end
-    
+    end 
 
 endmodule
 
