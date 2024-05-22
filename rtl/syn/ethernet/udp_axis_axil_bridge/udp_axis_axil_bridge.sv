@@ -8,8 +8,7 @@
 */
 
 /* TODO:
- *  - Figure out the state machine for creating AXI-Lite transfers
- *  - Figure out how to actually create a state machine for AXI-Lite transfers
+ *  - Make address write and data write channels happen in parallel
 */
 
 `default_nettype none
@@ -114,10 +113,12 @@ module udp_axis_axil_bridge # (
                         
                         // TODO: Check if length % 64 == 0
                         if (udp_output_header_if.dest_port == UDP_PORT) begin
+                            udp_payload_output_if.tready <= 1'b1;
                             request_id <= '0;
                             byte_id <= '0;
                             state <= STATE_RX_PAYLOAD;
                         end else begin
+                            udp_payload_output_if.tready <= 1'b1;
                             state <= STATE_RX_DISCARD;
                         end
                     end
@@ -125,7 +126,6 @@ module udp_axis_axil_bridge # (
 
                 // Discard the packet, not for us.
                 STATE_RX_DISCARD : begin
-                    udp_payload_output_if.tready <= 1'b1;
                     if (udp_payload_output_if.tvalid && udp_output_payload_if.tready && udp_output_payload_if.tlast) begin
                         udp_output_payload_if.tready <= 1'b0;
                         state <= STATE_RX_HEADER;
@@ -134,8 +134,6 @@ module udp_axis_axil_bridge # (
                 
                 // Receive the payload and insert into request_t buffer
                 STATE_RX_PAYLOAD : begin
-                    udp_payload_output_if.tready <= 1'b1;
-
                     if (udp_payload_output_if.tvalid && udp_payload_output_if.tready) begin
                         // TODO: Check endianness if running into issues
                         requests[request_id].byte[byte_id] <= udp_payload_output_if.tdata;
@@ -189,22 +187,24 @@ module udp_axis_axil_bridge # (
                     // Pad the msb with zeros
                     axil_if.araddr <= {2'b0, requests[request_id].request.address};
 
-                    if (axil_if.arvalid && axil_if.arready) begin
+                    if (axil_if.arready && axil_if.arvalid) begin
                         axil_if.arvalid <= 1'b0;
+                        axil_if.rready <= 1'b1;
                         state <= STATE_AXIL_READ_DATA;
                     end
                 end
                 
                 // AXI-Lite transfer
                 STATE_AXIL_READ_DATA : begin
-                    axil_if.rready <= 1'b1;
-
                     if (axil_if.rready && axil_if.rvalid) begin
-                        // TODO: Check rresp to see if the data is valid or not
+                        axil_if.rready <= 1'b0;
                         requests[request_id].request.data <= rdata;
-                        
+                        if (rresp != AXI_RESP_OKAY) begin
+                            requests[request_id].request.opcode <= requests[request_id].request.opcode & 2'b01;
+                        end
+
                         if (request_id == request_count) begin
-                            // TODO: Add more stuff that may be needed
+                            request_id <= '0;
                             state <= STATE_TX_HEADER;
                         end else begin
                             request_id <= request_id + 1;
@@ -215,20 +215,45 @@ module udp_axis_axil_bridge # (
                 
                 // AXI-Lite transfer
                 STATE_AXIL_WRITE_ADDRESS : begin
+                    axil_if.awvalid <= 1'b1;
+                    axil_if.awprot <= AXI_PROT_UNPRIVILEGED_NONSECURE_DATA;
+                    // Pad the msb with zeros
+                    axil_if.awaddr <= {2'b0, requests[request_id].request.address};
+
+                    if (axil_if.awready && axil_if.awvalid) begin
+                        axil_if.awvalid <= 1'b0;
+                        state <= STATE_AXIL_WRITE_DATA;
+                    end
                 end
                 
                 // AXI-Lite transfer
                 STATE_AXIL_WRITE_DATA : begin
+                    axil_if.wvalid <= 1'b1;
+                    // TODO: Use parameterization when it's been added to the interface
+                    axil_if.wstrb <= '1;
+                    axil_if.wdata <= requests[request_id].request.data;
+
+                    if (axil_if.wready && axil_if.wvalid) begin
+                        axil_if.wvalid <= 1'b0;
+                        axil_if.bready <= 1'b1;
+                        state <= STATE_AXIL_WRITE_RESPONSE;
+                    end
                 end
                 
                 // AXI-Lite transfer
                 STATE_AXIL_WRITE_RESPONSE : begin
-                    if (request_id == request_count) begin
-                        // TODO: Add more stuff that may be needed
-                        state <= STATE_TX_HEADER;
-                    end else begin
-                        request_id <= request_id + 1;
-                        state <= STATE_PROCESS_REQUEST;
+                    if (axil_if.bready && axil_if.bvalid) begin
+                        axil_if.bready <= 1'b0;
+                        if (axil_if.bresp != AXI_RESP_OKAY) begin
+                            requests[request_id].request.opcode <= requests[request_id].request.opcode & 2'b01;
+                        end
+                        if (request_id == request_count) begin
+                            request_id <= '0;
+                            state <= STATE_TX_HEADER;
+                        end else begin
+                            request_id <= request_id + 1;
+                            state <= STATE_PROCESS_REQUEST;
+                        end
                     end
                 end
 
