@@ -38,10 +38,6 @@ module udp_axis_axil_bridge # (
         At end of AXI-L transfers send the buffer back to the UDP module
     */
 
-    /* TODO:
-        Find a better name than just state_t for the high level SM states
-    */
-
     // Opcode for what to do
     typedef enum logic [1:0] { 
         WRITE_DATA=0,
@@ -58,7 +54,7 @@ module udp_axis_axil_bridge # (
 
     typedef union packed {
         request_t request;
-        var logic [7:0][7:0] byte;
+        var logic [7:0][7:0] bytes;
         // TODO: Add 64-bit representation
     } request_union_t;
 
@@ -136,11 +132,13 @@ module udp_axis_axil_bridge # (
                 STATE_RX_PAYLOAD : begin
                     if (udp_payload_output_if.tvalid && udp_payload_output_if.tready) begin
                         // TODO: Check endianness if running into issues
-                        requests[request_id].byte[byte_id] <= udp_payload_output_if.tdata;
+                        requests[request_id].bytes[byte_id] <= udp_payload_output_if.tdata;
                         
-                        if (byte_id == 8) begin
+                        if (byte_id == 7) begin
                             byte_id <= '0;
                             request_id <= request_id + 1;
+                        end else begin
+                            byte_id <= byte_id + 1;
                         end
                         
                         if (udp_payload_output_if.tlast) begin
@@ -229,7 +227,6 @@ module udp_axis_axil_bridge # (
                 // AXI-Lite transfer
                 STATE_AXIL_WRITE_DATA : begin
                     axil_if.wvalid <= 1'b1;
-                    // TODO: Use parameterization when it's been added to the interface
                     axil_if.wstrb <= '1;
                     axil_if.wdata <= requests[request_id].request.data;
 
@@ -249,6 +246,21 @@ module udp_axis_axil_bridge # (
                         end
                         if (request_id == request_count) begin
                             request_id <= '0;
+                            
+                            udp_header_input_if.hdr_valid <= 1'b1;
+                            udp_header_input_if.ip_dscp <= '0;
+                            udp_header_input_if.ip_ecn <= '0;
+                            udp_header_input_if.ip_ttl <= 64;
+                            udp_header_input_if.ip_source_ip <= dest_ip;
+                            udp_header_input_if.ip_dest_ip <= source_ip;
+                            udp_header_input_if.source_port <= dest_port;
+                            udp_header_input_if.dest_port <= source_port;
+                            udp_header_input_if.length <= frame_length;
+                            udp_header_input_if.checksum <= '0;
+
+                            byte_id <= '0;
+                            request_id <= '0;
+
                             state <= STATE_TX_HEADER;
                         end else begin
                             request_id <= request_id + 1;
@@ -257,12 +269,43 @@ module udp_axis_axil_bridge # (
                     end
                 end
 
-                //
+                // Transmit UDP header
                 STATE_TX_HEADER : begin
+                    if (udp_header_input_if.hdr_ready && udp_header_input_if.hdr_valid) begin
+                        udp_header_input_if.hdr_valid <= 1'b0;
+
+                        udp_input_payload_if.tvalid <= 1'b1;
+                        udp_input_payload_if.tdata <= requests[request_id].bytes[byte_id];
+                        udp_input_payload_if.tlast <= '0;
+                        udp_input_payload_if.tuser <= '0;
+                        byte_id <= byte_id + 1;
+
+                        state <= STATE_TX_DATA;
+                    end
                 end
 
-                //
+                // Transmit UDP data
                 STATE_TX_DATA : begin
+                    if (udp_input_payload_if.tready && udp_input_payload_if.tvalid) begin
+                        udp_input_payload_if.tdata <= requests[request_id].bytes[byte_id];
+
+                        if (byte_id == 7) begin
+                            byte_id <= '0;
+                            request_id <= request_id + 1;
+                        end else begin
+                            byte_id <= byte_id + 1;
+                        end
+
+                        if (request_id == request_count) begin
+                            if (byte_id == 6) begin
+                                udp_input_payload_if.tlast <= 1'b1;
+                                udp_input_payload_if.tuser <= 1'b0;
+                            end
+                            if (byte_id == 7) begin
+                                state <= STATE_RX_HEADER;
+                            end
+                        end
+                    end
                 end
                 
             endcase
