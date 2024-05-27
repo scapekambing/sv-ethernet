@@ -1,0 +1,131 @@
+/**
+ * @file axis_bfm.sv
+ *
+ * @author Mani Magnusson
+ * @date   2024
+ *
+ * @brief AXI-Stream bus functional model
+ */
+
+/* TODO:
+ *  - Implement back-to-back transfers
+ */
+
+`timescale 1ns / 1ps
+`default_nettype none
+
+package axil_bfm;
+class AXIS_Slave_BFM # ();
+    virtual AXIS_IF axis_if;
+    localparam int data_width = this.axis_if.TDATA_WIDTH;
+    localparam int strobe_width = this.axis_if.TDATA_WIDTH / 8 > 0 ? this.axis_if.TDATA_WIDTH / 8 : 1;
+    localparam int keep_width = this.axis_if.TDATA_WIDTH / 8 > 0 ? this.axis_if.TDATA_WIDTH / 8 : 1;
+    localparam int id_width = this.axis_if.TID_WIDTH > 0 ? this.axis_if.TID_WIDTH : 1;
+    localparam int dest_width = this.axis_if.TDEST_WIDTH > 0 ? this.axis_if.TDEST_WIDTH : 1;
+    localparam int user_width  = this.axis_if.TUSER_WIDTH > 0 ? this.axis_if.TUSER_WIDTH : 1;
+
+    function new(input virtual AXIS_IF axis_if_in);
+        axis_if = axis_if_in;
+    endfunction
+
+    task automatic reset_task();
+        this.axis_if.tready <= 1'b0;
+    endtask
+
+    task automatic transfer(
+        ref var logic clk,
+        output var logic [data_width-1:0] data,
+        output var logic [strobe_width-1:0] strobe,
+        output var logic [keep_width-1:0] keep,
+        output var logic last,
+        output var logic [id_width-1:0] id,
+        output var logic [dest_width-1:0] dest,
+        output var logic [user_width-1:0] user,
+        output var logic wakeup
+    );
+        this.axis_if.tready <= 1'b1;
+
+        do begin
+            @ (posedge clk);
+        end while (this.axis_if.tvalid === 1'b0);
+
+        data = this.axis_if.tdata;
+        strobe = this.axis_if.tstrb;
+        keep = this.axis_if.tkeep;
+        last = this.axis_if.tlast;
+        id = this.axis_if.tid;
+        dest = this.axis_if.tdest;
+        user = this.axis_if.tuser;
+        wakeup = this.axis_if.twakeup;
+
+        this.axis_if.tready <= 1'b0;
+    endtask
+endclass
+
+class AXIS_Master_BFM #();
+    virtual AXIS_IF axis_if;
+    localparam int data_width = this.axis_if.TDATA_WIDTH;
+    localparam int strobe_width = this.axis_if.TDATA_WIDTH / 8 > 0 ? this.axis_if.TDATA_WIDTH / 8 : 1;
+    localparam int keep_width = this.axis_if.TDATA_WIDTH / 8 > 0 ? this.axis_if.TDATA_WIDTH / 8 : 1;
+    localparam int id_width = this.axis_if.TID_WIDTH > 0 ? this.axis_if.TID_WIDTH : 1;
+    localparam int dest_width = this.axis_if.TDEST_WIDTH > 0 ? this.axis_if.TDEST_WIDTH : 1;
+    localparam int user_width  = this.axis_if.TUSER_WIDTH > 0 ? this.axis_if.TUSER_WIDTH : 1;
+
+    function new(input virtual AXIS_IF axis_if_in);
+        axis_if = axis_if_in;
+    endfunction
+
+    task automatic reset_task();
+        this.axis_if.tvalid <= '0;
+
+        this.axis_if.tdata <= '0;
+        this.axis_if.tstrb <= '0;
+        this.axis_if.tkeep <= '0;
+        this.axis_if.tlast <= '0;
+        this.axis_if.tid <= '0;
+        this.axis_if.tdest <= '0;
+        this.axis_if.tuser <= '0;
+        this.axis_if.twakeup <= '0;
+    endtask
+
+    task automatic transfer(
+        ref var logic clk,
+        input var logic [data_width-1:0] data = '0,
+        input var logic [strobe_width-1:0] strobe = '0,
+        input var logic [keep_width-1:0] keep = '0,
+        input var logic last = '0,
+        input var logic [id_width-1:0] id = '0,
+        input var logic [dest_width-1:0] dest = '0,
+        input var logic [user_width-1:0] user = '0,
+        input var logic wakeup = '0
+    );
+        this.axis_if.tvalid <= 1'b1;
+
+        this.axis_if.tdata <= data;
+        this.axis_if.tstrb <= strobe;
+        this.axis_if.tkeep <= keep;
+        this.axis_if.tlast <= last;
+        this.axis_if.tid <= id;
+        this.axis_if.tdest <= dest;
+        this.axis_if.tuser <= user;
+        this.axis_if.twakeup <= wakeup;
+
+        do begin
+            @ (posedge clk);
+        end while (this.axis_if.tready === 1'b0);
+
+        this.axis_if.tvalid <= 1'b0;
+
+        this.axis_if.tdata <= '0;
+        this.axis_if.tstrb <= '0;
+        this.axis_if.tkeep <= '0;
+        this.axis_if.tlast <= 1'b0;
+        this.axis_if.tid <= '0;
+        this.axis_if.tdest <= '0;
+        this.axis_if.tuser <= '0;
+        this.axis_if.twakeup <= 1'b0;
+    endtask
+endclass
+endpackage
+
+`default_nettype wire
