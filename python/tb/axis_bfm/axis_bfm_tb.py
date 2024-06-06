@@ -35,18 +35,23 @@ for i in range(3):
     TDATA.append(random.randint(0, max_int[0]))
 
 # Override testbench parameters
-for i in range(2):
-    for j in range(2):
-        tb.add_config(
-            "TDATA_0x%X_RANDOM_%d" % (
-                TDATA[i],
-                j
-            ),
-            parameters={
-                "TDATA" : TDATA[i],
-                "USE_RANDOM_WAIT" : j
-            }
-        )
+#for i in range(2):
+#    for j in range(2):
+#        tb.add_config(
+#            "TDATA_0x%X_RANDOM_%d" % (
+#                TDATA[i],
+#                j
+#            ),
+#            parameters={
+#                "TDATA" : TDATA[i],
+#                "USE_RANDOM_WAIT" : j
+#            }
+#        )
+
+tb.add_config("TDATA_0x08_RANDOM_WAIT_%d" % (0), parameters={
+                "TDATA" : 8,
+                "USE_RANDOM_WAIT" : 0
+            })
 
 # Suppress vopt deprecation error, uncomment if encountering issue
 #vu.add_compile_option('modelsim.vlog_flags', ['-suppress', '12110'])

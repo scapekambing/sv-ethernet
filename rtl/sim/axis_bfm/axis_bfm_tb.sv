@@ -42,8 +42,8 @@ module axis_bfm_tb ();
 
     parameter bit USE_RANDOM_WAIT = 1'b0;
 
-    logic clk,
-    logic reset,
+    logic clk;
+    logic reset;
 
     AXIS_IF # (
         .TDATA_WIDTH(AXIS_TDATA_WIDTH),
@@ -54,8 +54,23 @@ module axis_bfm_tb ();
         .TWAKEUP_ENABLE(AXIS_TWAKEUP_ENABLE)
     ) axis_if();
 
-    AXIS_Master_BFM master_bfm;
-    AXIS_Slave_BFM slave_bfm;
+    AXIS_Master_BFM # (
+        .data_width(AXIS_TDATA_WIDTH),
+        .id_width(AXIS_TID_WIDTH),
+        .dest_width(AXIS_TDEST_WIDTH),
+        .user_width(AXIS_TUSER_WIDTH),
+        .keep_enable(AXIS_TKEEP_ENABLE),
+        .wakeup_enable(AXIS_TWAKEUP_ENABLE)
+    ) master_bfm;
+
+    AXIS_Slave_BFM # (
+        .data_width(AXIS_TDATA_WIDTH),
+        .id_width(AXIS_TID_WIDTH),
+        .dest_width(AXIS_TDEST_WIDTH),
+        .user_width(AXIS_TUSER_WIDTH),
+        .keep_enable(AXIS_TKEEP_ENABLE),
+        .wakeup_enable(AXIS_TWAKEUP_ENABLE)
+    ) slave_bfm;
 
     always begin
         #5ns;
@@ -65,10 +80,14 @@ module axis_bfm_tb ();
     `TEST_SUITE begin
         `TEST_SUITE_SETUP begin
             clk = 1'b0;
-            master_bfm = new(axis_if.Transmitter);
-            slave_bfm = new(axis_if.Receiver);
+            reset = 1'b1;
+            master_bfm = new(axis_if); // Transmitter
+            slave_bfm = new(axis_if); // Receiver
             master_bfm.reset_task();
             slave_bfm.reset_task();
+            @ (posedge clk);
+            reset = 1'b0;
+            @ (posedge clk);
         end
 
         `TEST_CASE("Simple_transfer") begin
