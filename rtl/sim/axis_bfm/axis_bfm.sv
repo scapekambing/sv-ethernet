@@ -71,8 +71,6 @@ class AXIS_Slave_BFM # (
         dest = this.axis_if.tdest;
         user = this.axis_if.tuser;
         wakeup = this.axis_if.twakeup;
-        
-        @ (posedge clk);
 
         this.axis_if.tready = 1'b0;
     endtask
@@ -142,7 +140,6 @@ class AXIS_Master_BFM # (
         do begin
             @ (posedge clk);
         end while (this.axis_if.tready === 1'b0);
-        @ (posedge clk);
 
         this.axis_if.tvalid = 1'b0;
 
