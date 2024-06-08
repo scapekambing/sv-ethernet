@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import random
 
-sys.path.append('../../srcs')
+sys.path.append('../../../srcs')
 import vunit_util
 
 # NOTE: This assumes the location of the ./rtl and ./workspace directory relative to where this is run from

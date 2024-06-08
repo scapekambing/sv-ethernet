@@ -8,7 +8,6 @@
  */
 
 /* TODO:
- *  - Write Python code
  *  - Test everything
  *  - Implement back-to-back transfers (needs BFM modifications)
  */
