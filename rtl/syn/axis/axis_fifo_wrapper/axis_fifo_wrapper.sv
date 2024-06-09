@@ -11,16 +11,6 @@
 
 module axis_fifo_wrapper # (
     parameter int DEPTH                 = 4096,
-    //parameter int DATA_WIDTH            = 8,
-    //parameter bit KEEP_ENABLE           = (DATA_WIDTH>8),
-    //parameter int KEEP_WIDTH            = ((DATA_WIDTH+7)/8),
-    //parameter bit LAST_ENABLE           = 1'b1,
-    //parameter bit ID_ENABLE             = 1'b0,
-    //parameter int ID_WIDTH              = 8,
-    //parameter bit DEST_ENABLE           = 1'b0,
-    //parameter int DEST_WIDTH            = 8,
-    //parameter bit USER_ENABLE           = 1'b1,
-    //parameter int USER_WIDTH            = 1,
     parameter int RAM_PIPELINE          = 1,
     parameter bit OUTPUT_FIFO_ENABLE    = 1'b0,
     parameter bit FRAME_FIFO            = 1'b0,
