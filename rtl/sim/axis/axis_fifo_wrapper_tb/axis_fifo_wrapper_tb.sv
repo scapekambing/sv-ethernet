@@ -74,17 +74,7 @@ module axis_fifo_wrapper_tb ();
     ) axis_if_out();
 
     axis_fifo_wrapper # (
-        .DEPTH(DEPTH),
-        .DATA_WIDTH(AXIS_TDATA_WIDTH),
-        .KEEP_ENABLE(AXIS_TKEEP_ENABLE),
-        .KEEP_WIDTH(AXIS_TKEEP_WIDTH),
-        .LAST_ENABLE(1'b1),
-        .ID_ENABLE(1'b1),
-        .ID_WIDTH(AXIS_TID_WIDTH),
-        .DEST_ENABLE(1'b1),
-        .DEST_WIDTH(AXIS_TDEST_WIDTH),
-        .USER_ENABLE(1'b1),
-        .USER_WIDTH(AXIS_TUSER_WIDTH)
+        .DEPTH(DEPTH)
     ) axis_fifo_inst (
         .clk(clk),
         .reset(reset),
@@ -137,7 +127,7 @@ module axis_fifo_wrapper_tb ();
             @ (posedge clk);
         end
 
-        `TEST_CASE("Simple transfer") begin
+        `TEST_CASE("Simple_transfer") begin
             logic [AXIS_TDATA_WIDTH-1:0] tdata_out;
             logic [AXIS_TSTRB_WIDTH-1:0] tstrb_out;
             logic [AXIS_TKEEP_WIDTH-1:0] tkeep_out;
@@ -153,6 +143,66 @@ module axis_fifo_wrapper_tb ();
             @ (posedge clk);
             $display("TDATA: 0x%0H", tdata_out);
             `CHECK_EQUAL(tdata_out, TDATA);
+        end
+
+        `TEST_CASE("Simple_two_transfers") begin
+            logic [AXIS_TDATA_WIDTH-1:0] tdata_out;
+            logic [AXIS_TSTRB_WIDTH-1:0] tstrb_out;
+            logic [AXIS_TKEEP_WIDTH-1:0] tkeep_out;
+            logic tlast_out;
+            logic [AXIS_TID_WIDTH-1:0] tid_out;
+            logic [AXIS_TDEST_WIDTH-1:0] tdest_out;
+            logic [AXIS_TUSER_WIDTH-1:0] tuser_out;
+            logic twakeup_out;
+
+            master_bfm.transfer(clk, TDATA, '0, '0, 1'b0, '0, '0, '0, 1'b0);
+            master_bfm.transfer(clk, TDATA+1, '0, '0, 1'b1, '0, '0, '0, 1'b0);
+            slave_bfm.transfer(clk, tdata_out, tstrb_out, tkeep_out, tlast_out, tid_out, tdest_out, tuser_out, twakeup_out);
+
+            @ (posedge clk);
+            $display("TDATA: 0x%0H, TLAST: 0x%0H", tdata_out, tlast_out);
+            `CHECK_EQUAL(tdata_out, TDATA);
+            `CHECK_EQUAL(tlast_out, 1'b0);
+
+            slave_bfm.transfer(clk, tdata_out, tstrb_out, tkeep_out, tlast_out, tid_out, tdest_out, tuser_out, twakeup_out);
+
+            @ (posedge clk);
+            $display("TDATA: 0x%0H, TLAST: 0x%0H", tdata_out, tlast_out);
+            `CHECK_EQUAL(tdata_out, TDATA+1);
+            `CHECK_EQUAL(tlast_out, 1'b1);
+        end
+
+        `TEST_CASE("Full_round") begin
+            logic [AXIS_TDATA_WIDTH-1:0] tdata_out;
+            logic [AXIS_TSTRB_WIDTH-1:0] tstrb_out;
+            logic [AXIS_TKEEP_WIDTH-1:0] tkeep_out;
+            logic tlast_out;
+            logic [AXIS_TID_WIDTH-1:0] tid_out;
+            logic [AXIS_TDEST_WIDTH-1:0] tdest_out;
+            logic [AXIS_TUSER_WIDTH-1:0] tuser_out;
+            logic twakeup_out;
+
+            master_bfm.transfer(clk, TDATA, TSTRB, TKEEP, 1'b0, TID, TDEST, TUSER, 1'b0);
+            master_bfm.transfer(clk, TDATA+1, TSTRB, TKEEP, 1'b1, TID, TDEST, TUSER, 1'b0);
+            slave_bfm.transfer(clk, tdata_out, tstrb_out, tkeep_out, tlast_out, tid_out, tdest_out, tuser_out, twakeup_out);
+
+            @ (posedge clk);
+            $display("TDATA: 0x%0H, TLAST: 0x%0H", tdata_out, tlast_out);
+            `CHECK_EQUAL(tdata_out, TDATA);
+            `CHECK_EQUAL(tid_out, TID);
+            `CHECK_EQUAL(tdest_out, TDEST);
+            `CHECK_EQUAL(tuser_out, TUSER);
+            `CHECK_EQUAL(tlast_out, 1'b0);
+
+            slave_bfm.transfer(clk, tdata_out, tstrb_out, tkeep_out, tlast_out, tid_out, tdest_out, tuser_out, twakeup_out);
+
+            @ (posedge clk);
+            $display("TDATA: 0x%0H, TLAST: 0x%0H", tdata_out, tlast_out);
+            `CHECK_EQUAL(tdata_out, TDATA+1);
+            `CHECK_EQUAL(tid_out, TID);
+            `CHECK_EQUAL(tdest_out, TDEST);
+            `CHECK_EQUAL(tuser_out, TUSER);
+            `CHECK_EQUAL(tlast_out, 1'b1);
         end
     end
 

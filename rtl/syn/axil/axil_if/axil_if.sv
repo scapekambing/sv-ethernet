@@ -14,7 +14,9 @@
 
 `default_nettype none
 
-interface AXIL_IF # ();
+interface AXIL_IF # (
+    parameter int 
+);
     // Signals
     
     // Write address channel

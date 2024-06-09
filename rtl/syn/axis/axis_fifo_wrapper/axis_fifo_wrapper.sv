@@ -11,16 +11,16 @@
 
 module axis_fifo_wrapper # (
     parameter int DEPTH                 = 4096,
-    parameter int DATA_WIDTH            = 8,
-    parameter bit KEEP_ENABLE           = (DATA_WIDTH>8),
-    parameter int KEEP_WIDTH            = ((DATA_WIDTH+7)/8),
-    parameter bit LAST_ENABLE           = 1'b1,
-    parameter bit ID_ENABLE             = 1'b0,
-    parameter int ID_WIDTH              = 8,
-    parameter bit DEST_ENABLE           = 1'b0,
-    parameter int DEST_WIDTH            = 8,
-    parameter bit USER_ENABLE           = 1'b1,
-    parameter int USER_WIDTH            = 1,
+    //parameter int DATA_WIDTH            = 8,
+    //parameter bit KEEP_ENABLE           = (DATA_WIDTH>8),
+    //parameter int KEEP_WIDTH            = ((DATA_WIDTH+7)/8),
+    //parameter bit LAST_ENABLE           = 1'b1,
+    //parameter bit ID_ENABLE             = 1'b0,
+    //parameter int ID_WIDTH              = 8,
+    //parameter bit DEST_ENABLE           = 1'b0,
+    //parameter int DEST_WIDTH            = 8,
+    //parameter bit USER_ENABLE           = 1'b1,
+    //parameter int USER_WIDTH            = 1,
     parameter int RAM_PIPELINE          = 1,
     parameter bit OUTPUT_FIFO_ENABLE    = 1'b0,
     parameter bit FRAME_FIFO            = 1'b0,
@@ -49,42 +49,52 @@ module axis_fifo_wrapper # (
     output var logic                    status_good_frame
 );
 
-// TODO: Maybe skip these parameters and use the if parameters?
+localparam int DATA_WIDTH   = in_axis_if.TDATA_WIDTH;
+localparam bit KEEP_ENABLE  = in_axis_if.TKEEP_ENABLE && (in_axis_if.TKEEP_WIDTH > 0);
+localparam int KEEP_WIDTH   = (in_axis_if.TKEEP_WIDTH > 0 ? in_axis_if.TKEEP_WIDTH : 1);
+localparam bit LAST_ENABLE  = 1'b1; // Last is just enabled
+localparam bit ID_ENABLE    = (in_axis_if.TID_WIDTH > 0);
+localparam int ID_WIDTH     = (in_axis_if.TID_WIDTH > 0 ? in_axis_if.TID_WIDTH : 1);
+localparam bit DEST_ENABLE  = (in_axis_if.TDEST_WIDTH > 0);
+localparam int DEST_WIDTH   = (in_axis_if.TDEST_WIDTH > 0 ? in_axis_if.TDEST_WIDTH : 1);
+localparam bit USER_ENABLE  = (in_axis_if.TUSER_WIDTH > 0);
+localparam int USER_WIDTH   = (in_axis_if.TUSER_WIDTH > 0 ? in_axis_if.TUSER_WIDTH : 1);
 
+// Spec allows zero width TDATA but nobody seems to support it
 initial begin
-    assert (in_axis_if.TDATA_WIDTH == DATA_WIDTH &&
-            out_axis_if.TDATA_WIDTH == DATA_WIDTH)
-    else $error("Assertion in %m failed, AXIS IF TDATA_WIDTH should equal DATA_WIDTH");
+    assert (in_axis_if.TDATA_WIDTH == out_axis_if.TDATA_WIDTH && in_axis_if.TDATA_WIDTH > 0)
+    else $error("Assertion in %m failed, AXIS IF TDATA_WIDTH should be equal and larger than zero");
 end
 
 initial begin
-    assert (in_axis_if.TID_WIDTH == ID_WIDTH &&
-            out_axis_if.TID_WIDTH == ID_WIDTH)
-    else $error("Assertion in %m failed, AXIS IF TID_WIDTH should equal ID_WIDTH");
+    assert (in_axis_if.TID_WIDTH == out_axis_if.TID_WIDTH)
+    else $error("Assertion in %m failed, AXIS IF TID_WIDTH should be equal");
 end
 
 initial begin
-    assert (in_axis_if.TDEST_WIDTH == DEST_WIDTH &&
-            out_axis_if.TDEST_WIDTH == DEST_WIDTH)
-    else $error("Assertion in %m failed, AXIS IF TDEST_WIDTH should equal DEST_WIDTH");
+    assert (in_axis_if.TDEST_WIDTH == out_axis_if.TDEST_WIDTH)
+    else $error("Assertion in %m failed, AXIS IF TDEST_WIDTH should be equal");
 end
 
 initial begin
-    assert (in_axis_if.TUSER_WIDTH == USER_WIDTH &&
-            out_axis_if.TUSER_WIDTH == USER_WIDTH)
-    else $error("Assertion in %m failed, AXIS IF TUSER_WIDTH should equal USER_WIDTH");
+    assert (in_axis_if.TUSER_WIDTH == out_axis_if.TUSER_WIDTH)
+    else $error("Assertion in %m failed, AXIS IF TUSER_WIDTH should be equal");
 end
 
 initial begin
-    assert (in_axis_if.TKEEP_ENABLE == KEEP_ENABLE &&
-            out_axis_if.TKEEP_WIDTH == KEEP_WIDTH)
-    else $error("Assertion in %m failed, AXIS IF TKEEP_ENABLE should equal KEEP_ENABLE");
+    assert (in_axis_if.TKEEP_ENABLE == out_axis_if.TKEEP_ENABLE)
+    else $error("Assertion in %m failed, AXIS IF TKEEP_ENABLE should be equal");
 end
 
 initial begin
-    assert (in_axis_if.TWAKEUP_ENABLE == 0 &&
-            out_axis_if.TWAKEUP_ENABLE == 0)
+    assert (in_axis_if.TWAKEUP_ENABLE == 0 && out_axis_if.TWAKEUP_ENABLE == 0)
     else $error("Assertion in %m failed, AXIS IF TWAKEUP_ENABLE should be 0");
+end
+
+// Driving these signals to zero since they're not supported by the fifo
+always_comb begin
+    out_axis_if.tstrb = '0;
+    out_axis_if.twakeup = 1'b0;
 end
 
 axis_fifo # (

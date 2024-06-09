@@ -25,6 +25,29 @@ vunit_util.add_source(lib, LIB_ROOT, "./verilog-axis/rtl/axis_fifo.v")
 # Create testbench
 tb = lib.test_bench("axis_fifo_wrapper_tb")
 
-tb.add_config("TDATA=0x08", parameters={"TDATA" : 8})
+tb.add_config("TDATA=0x08", parameters={
+    "TDATA"             : 8,
+    "TSTRB"             : 1,
+    "TKEEP"             : 1,
+    "AXIS_TID_WIDTH"    : 8,
+    "TID"               : 5,
+    "AXIS_TDEST_WIDTH"  : 8,
+    "TDEST"             : 3,
+    "AXIS_TUSER_WIDTH"  : 3,
+    "TUSER"             : 2
+    })
+
+tb.add_config("TDATA_WIDTH=64_TDATA=0x25", parameters={
+    "AXIS_TDATA_WIDTH"  : 64,
+    "TDATA"             : 0x25,
+    "TSTRB"             : 1,
+    "TKEEP"             : 1,
+    "AXIS_TID_WIDTH"    : 8,
+    "TID"               : 5,
+    "AXIS_TDEST_WIDTH"  : 8,
+    "TDEST"             : 3,
+    "AXIS_TUSER_WIDTH"  : 3,
+    "TUSER"             : 2
+    })
 
 vu.main()
