@@ -8,7 +8,9 @@
  */
 
 /* TODO:
- *  - Add parameterization
+ *  - Fix assigns to be blocking (=) rather than non-blocking (<=), see the axis bfm
+ *  - Check if awaddr, wdata, araddr and rdata widths have to be multiples of 8
+ *    I assume they are, in which case add a check to make sure they are and throw an assertion error if not
  *  - Option to have READY deassert before VALID is asserted (allowed in spec)
 */
 
@@ -16,13 +18,25 @@
 `default_nettype none
 
 package axil_bfm;
-class AXIL_Slave_BFM #();
-    virtual AXIL_IF axil_if;
+class AXIL_Slave_BFM #(
+    parameter int AWADDR_WIDTH  = 32,
+    parameter int WDATA_WIDTH   = 32,
+    parameter int ARADDR_WIDTH  = 32,
+    parameter int RDATA_WIDTH   = 32
+);
+    typedef virtual AXIL_IF # (
+        .AWADDR_WIDTH(AWADDR_WIDTH),
+        .WDATA_WIDTH(WDATA_WIDTH),
+        .ARADDR_WIDTH(ARADDR_WIDTH),
+        .RDATA_WIDTH(RDATA_WIDTH)
+    ) v_axil_if_t;
 
-    int rand_wait_max = 10; //ns
+    v_axil_if_t axil_if;
+
+    int rand_wait_max = 10; // clock cycles
     bit use_random_wait = 0;
 
-    function new(input virtual AXIL_IF axil_if_in, input bit use_random_wait_in);
+    function new(v_axil_if_t axil_if_in, input bit use_random_wait_in);
         axil_if = axil_if_in;
         use_random_wait = use_random_wait_in;
     endfunction
