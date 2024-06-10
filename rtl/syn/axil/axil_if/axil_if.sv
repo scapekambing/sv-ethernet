@@ -7,18 +7,13 @@
  * @brief AXI4-Lite Interface Definition, uses a 32 bit bus
  */
 
- /* 
- * TODO:
- *  - Add parameterization
-*/
-
 `default_nettype none
 
 interface AXIL_IF # (
-    parameter int AWADDR_WIDTH = 32,
-    parameter int WDATA_WIDTH = 32,
-    parameter int ARADDR_WIDTH = 32,
-    parameter int RDATA_WIDTH = 32
+    parameter int AWADDR_WIDTH  = 32,
+    parameter int WDATA_WIDTH   = 32,
+    parameter int ARADDR_WIDTH  = 32,
+    parameter int RDATA_WIDTH   = 32
 );
     localparam WSTRB_WIDTH = WDATA_WIDTH / 8;
     
