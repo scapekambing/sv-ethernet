@@ -43,14 +43,14 @@ class AXIL_Slave_BFM #(
 
     // Set all slave outputs to zero
     task automatic reset_task();
-        this.axil_if.awready <= '0;
-        this.axil_if.wready <= '0;
-        this.axil_if.bresp <= '0;
-        this.axil_if.bvalid <= '0;
-        this.axil_if.arready <= '0;
-        this.axil_if.rdata <= '0;
-        this.axil_if.rresp <= '0;
-        this.axil_if.rvalid <= '0;
+        this.axil_if.awready = '0;
+        this.axil_if.wready = '0;
+        this.axil_if.bresp = '0;
+        this.axil_if.bvalid = '0;
+        this.axil_if.arready = '0;
+        this.axil_if.rdata = '0;
+        this.axil_if.rresp = '0;
+        this.axil_if.rvalid = '0;
     endtask
 
     task automatic awtransfer(
@@ -65,14 +65,17 @@ class AXIL_Slave_BFM #(
                 @(posedge clk);
             end
         end
-        this.axil_if.awready <= '1;
+
+        this.axil_if.awready = 1'b1;
+
         do begin
             @(posedge clk);
         end while (this.axil_if.awvalid === 1'b0);
         
         address = this.axil_if.awaddr;
         awprot = this.axil_if.awprot;
-        this.axil_if.awready <= '0;
+
+        this.axil_if.awready = 1'b0;
     endtask
 
     task automatic wtransfer(
@@ -87,14 +90,16 @@ class AXIL_Slave_BFM #(
                 @(posedge clk);
             end
         end
-        this.axil_if.wready <= '1;
+
+        this.axil_if.wready = 1'b1;
+
         do begin
             @(posedge clk);
         end while (this.axil_if.wvalid  === 1'b0);
         
         data = this.axil_if.wdata;
         strobe = this.axil_if.wstrb;
-        this.axil_if.wready <= '0;
+        this.axil_if.wready = 1'b0;
     endtask
 
     task automatic btransfer(
@@ -108,13 +113,15 @@ class AXIL_Slave_BFM #(
                 @(posedge clk);
             end
         end
-        this.axil_if.bresp <= bresp;
-        this.axil_if.bvalid <= '1;
+        
+        this.axil_if.bresp = bresp;
+        this.axil_if.bvalid = 1'b1;
+
         do begin
             @(posedge clk);
         end while (this.axil_if.bready  === 1'b0);
         
-        this.axil_if.bvalid <= '0;
+        this.axil_if.bvalid = 1'b0;
     endtask
 
     task automatic artransfer(
@@ -129,14 +136,16 @@ class AXIL_Slave_BFM #(
                 @(posedge clk);
             end
         end
-        this.axil_if.arready <= '1;
+
+        this.axil_if.arready = 1'b1;
+
         do begin
             @(posedge clk);
         end while (this.axil_if.arvalid === 1'b0);
         
         address = this.axil_if.araddr;
         arprot = this.axil_if.arprot;
-        this.axil_if.arready <= '0;
+        this.axil_if.arready = 1'b0;
     endtask
 
     task automatic rtransfer(
@@ -151,14 +160,16 @@ class AXIL_Slave_BFM #(
                 @(posedge clk);
             end
         end
-        this.axil_if.rdata <= data;
-        this.axil_if.rresp <= rresp;
-        this.axil_if.rvalid <= '1;
+        this.axil_if.rdata = data;
+        this.axil_if.rresp = rresp;
+
+        this.axil_if.rvalid = 1'b1;
+
         do begin
             @(posedge clk);
         end while (this.axil_if.rready === 1'b0);
         
-        this.axil_if.rvalid <= '0;
+        this.axil_if.rvalid = 1'b0;
     endtask
 
     // Write transaction (slave receives an address and data)
