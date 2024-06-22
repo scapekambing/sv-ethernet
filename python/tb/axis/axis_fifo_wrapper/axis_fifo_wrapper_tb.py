@@ -19,7 +19,7 @@ vu, lib = vunit_util.init(WORKSPACE)
 vunit_util.add_source(lib, RTL_ROOT, "./syn/axis/axis_if/axis_if.sv")
 vunit_util.add_source(lib, RTL_ROOT, "./syn/axis/axis_fifo_wrapper/axis_fifo_wrapper.sv")
 vunit_util.add_source(lib, RTL_ROOT, "./sim/axis/axis_bfm/axis_bfm.sv")
-vunit_util.add_source(lib, RTL_ROOT, "./sim/axis/axis_fifo_wrapper_tb/axis_fifo_wrapper_tb.sv")
+vunit_util.add_source(lib, RTL_ROOT, "./sim/axis/axis_fifo_wrapper/axis_fifo_wrapper_tb.sv")
 vunit_util.add_source(lib, LIB_ROOT, "./verilog-axis/rtl/axis_fifo.v")
 
 # Create testbench
