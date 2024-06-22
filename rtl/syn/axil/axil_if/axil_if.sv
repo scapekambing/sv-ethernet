@@ -10,24 +10,22 @@
 `default_nettype none
 
 interface AXIL_IF # (
-    parameter int AWADDR_WIDTH  = 32,
-    parameter int WDATA_WIDTH   = 32,
-    parameter int ARADDR_WIDTH  = 32,
-    parameter int RDATA_WIDTH   = 32
+    parameter int ADDR_WIDTH  = 32,
+    parameter int DATA_WIDTH   = 32
 );
-    localparam WSTRB_WIDTH = WDATA_WIDTH / 8;
+    localparam STRB_WIDTH = DATA_WIDTH / 8;
     
     // Write address channel
     var logic        awvalid; // Single bit
     var logic        awready; // Single bit
-    var logic [(AWADDR_WIDTH > 0 ? AWADDR_WIDTH : 1)-1:0] awaddr;
+    var logic [(ADDR_WIDTH > 0 ? ADDR_WIDTH : 1)-1:0] awaddr;
     var logic  [2:0] awprot;  // 3 bit access protection
 
     // Write data channel
     var logic        wvalid; // Single bit
     var logic        wready; // Single bit
-    var logic [(WDATA_WIDTH > 0 ? WDATA_WIDTH : 1)-1:0] wdata;
-    var logic  [(WSTRB_WIDTH > 0 ? WSTRB_WIDTH : 1)-1:0] wstrb;
+    var logic [(DATA_WIDTH > 0 ? DATA_WIDTH : 1)-1:0] wdata;
+    var logic  [(STRB_WIDTH > 0 ? STRB_WIDTH : 1)-1:0] wstrb;
 
     // Write response channel
     var logic        bvalid; // Single bit
@@ -37,13 +35,13 @@ interface AXIL_IF # (
     // Read address channel signals
     var logic        arvalid; // Single bit
     var logic        arready; // Single bit
-    var logic [(ARADDR_WIDTH > 0 ? ARADDR_WIDTH : 1)-1:0] araddr;
+    var logic [(ADDR_WIDTH > 0 ? ADDR_WIDTH : 1)-1:0] araddr;
     var logic [2:0]  arprot;  // 3 bit access protection
 
     // Read data channel
     var logic        rvalid; // Single bit
     var logic        rready; // Single bit
-    var logic [(RDATA_WIDTH > 0 ? RDATA_WIDTH : 1)-1:0] rdata;
+    var logic [(DATA_WIDTH > 0 ? DATA_WIDTH : 1)-1:0] rdata;
     var logic  [1:0] rresp; // Response lines
     
     enum logic [1:0] {
