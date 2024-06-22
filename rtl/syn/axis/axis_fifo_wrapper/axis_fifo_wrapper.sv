@@ -1,5 +1,5 @@
 /**
- * @file axi-stream_fifo_wrapper.sv
+ * @file axis_fifo_wrapper.sv
  * 
  * @author Mani Magnusson
  * @date   2024
