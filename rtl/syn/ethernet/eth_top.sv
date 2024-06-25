@@ -57,10 +57,10 @@ module eth_top # (
    ETH_HEADER_IF tx_eth_header_if();
 
    UDP_TX_HEADER_IF udp_tx_header_if(); // input header
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_input_payload_if();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if();
 
    UDP_RX_HEADER_IF udp_rx_header_if(); // output header
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_output_payload_if();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if();
 
    /* Modules */
 
@@ -146,8 +146,8 @@ module eth_top # (
          match_reg <= '0;
          match_reg_n <= '0;
       end else begin
-         if (udp_output_payload_if.tvalid) begin
-            if ((!match_reg && !match_reg_n) || (udp_output_payload_if.tvalid && udp_output_payload_if.tready && udp_output_payload_if.tlast)) begin
+         if (udp_rx_payload_if.tvalid) begin
+            if ((!match_reg && !match_reg_n) || (udp_rx_payload_if.tvalid && udp_rx_payload_if.tready && udp_rx_payload_if.tlast)) begin
                match_reg <= match;
                match_reg_n <= match_n;
             end
@@ -170,11 +170,11 @@ module eth_top # (
    assign udp_tx_header_if.length = udp_rx_header_if.length;
    assign udp_tx_header_if.checksum = 0;
 
-   assign udp_input_payload_if.tdata = udp_output_payload_if.tdata;
-   assign udp_input_payload_if.tvalid = udp_output_payload_if.tvalid && match_reg;
-   assign udp_output_payload_if.tready = (udp_input_payload_if.tready && match_reg) || match_reg_n;
-   assign udp_input_payload_if.tlast = udp_output_payload_if.tlast;
-   assign udp_input_payload_if.tuser = udp_output_payload_if.tuser;
+   assign udp_tx_payload_if.tdata = udp_rx_payload_if.tdata;
+   assign udp_tx_payload_if.tvalid = udp_rx_payload_if.tvalid && match_reg;
+   assign udp_rx_payload_if.tready = (udp_tx_payload_if.tready && match_reg) || match_reg_n;
+   assign udp_tx_payload_if.tlast = udp_rx_payload_if.tlast;
+   assign udp_tx_payload_if.tuser = udp_rx_payload_if.tuser;
 
    // Skipping IP
    udp_complete_wrapper # (
@@ -195,11 +195,11 @@ module eth_top # (
       .ip_output_header_if(ip_output_header_if.Output),
       .ip_output_payload_if(ip_output_payload_if.Transmitter),
 
-      .udp_tx_header_if(udp_tx_header_if.Input),
-      .udp_input_payload_if(udp_input_payload_if.Receiver),
+      .udp_tx_header_if(udp_tx_header_if.Sink),
+      .udp_tx_payload_if(udp_tx_payload_if.Receiver),
 
-      .udp_rx_header_if(udp_rx_header_if.Output),
-      .udp_output_payload_if(udp_output_payload_if.Transmitter),
+      .udp_rx_header_if(udp_rx_header_if.Source),
+      .udp_rx_payload_if(udp_rx_payload_if.Transmitter),
 
       .ip_rx_busy(),
       .ip_tx_busy(),

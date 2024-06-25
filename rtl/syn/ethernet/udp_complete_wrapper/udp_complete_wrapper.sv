@@ -38,12 +38,12 @@ module udp_complete_wrapper # (
    AXIS_IF.Transmitter ip_output_payload_if,
 
    /* UDP input */
-   UDP_INPUT_HEADER_IF.Input udp_input_header_if,
-   AXIS_IF.Receiver udp_input_payload_if,
+   UDP_TX_HEADER_IF.Sink udp_tx_header_if,
+   AXIS_IF.Receiver udp_tx_payload_if,
 
    /* UDP output */
-   UDP_OUTPUT_HEADER_IF.Output udp_output_header_if,
-   AXIS_IF.Transmitter udp_output_payload_if,
+   UDP_RX_HEADER_IF.Source udp_rx_header_if,
+   AXIS_IF.Transmitter udp_rx_payload_if,
 
    /* Status */
    output var logic ip_rx_busy,
@@ -77,8 +77,8 @@ module udp_complete_wrapper # (
                 output_eth_payload_if.TDATA_WIDTH == 8 &&
                 ip_input_payload_if.TDATA_WIDTH == 8 &&
                 ip_output_payload_if.TDATA_WIDTH == 8 &&
-                udp_input_payload_if.TDATA_WIDTH == 8 &&
-                udp_output_payload_if.TDATA_WIDTH == 8)
+                udp_tx_payload_if.TDATA_WIDTH == 8 &&
+                udp_rx_payload_if.TDATA_WIDTH == 8)
         else $error("Assertion in %m failed, TDATA_WIDTH parameter in the AXIS interfaces should be 8");
     end
 
@@ -87,8 +87,8 @@ module udp_complete_wrapper # (
                 output_eth_payload_if.TID_WIDTH == 0 &&
                 ip_input_payload_if.TID_WIDTH == 0 &&
                 ip_output_payload_if.TID_WIDTH == 0 &&
-                udp_input_payload_if.TID_WIDTH == 0 &&
-                udp_output_payload_if.TID_WIDTH == 0)
+                udp_tx_payload_if.TID_WIDTH == 0 &&
+                udp_rx_payload_if.TID_WIDTH == 0)
         else $error("Assertion in %m failed, TID_WIDTH parameter in the AXIS interfaces should be 0");
     end
 
@@ -97,8 +97,8 @@ module udp_complete_wrapper # (
                 output_eth_payload_if.TUSER_WIDTH == 1 &&
                 ip_input_payload_if.TUSER_WIDTH == 1 &&
                 ip_output_payload_if.TUSER_WIDTH == 1 &&
-                udp_input_payload_if.TUSER_WIDTH == 1 &&
-                udp_output_payload_if.TUSER_WIDTH == 1)
+                udp_tx_payload_if.TUSER_WIDTH == 1 &&
+                udp_rx_payload_if.TUSER_WIDTH == 1)
         else $error("Assertion in %m failed, TUSER_WIDTH parameter in the AXIS interfaces should be 1");
     end
 
@@ -107,8 +107,8 @@ module udp_complete_wrapper # (
                 output_eth_payload_if.TDEST_WIDTH == 0 &&
                 ip_input_payload_if.TDEST_WIDTH == 0 &&
                 ip_output_payload_if.TDEST_WIDTH == 0 &&
-                udp_input_payload_if.TDEST_WIDTH == 0 &&
-                udp_output_payload_if.TDEST_WIDTH == 0)
+                udp_tx_payload_if.TDEST_WIDTH == 0 &&
+                udp_rx_payload_if.TDEST_WIDTH == 0)
         else $error("Assertion in %m failed, TDEST_WIDTH parameter in the AXIS interfaces should be 0");
     end
 
@@ -117,8 +117,8 @@ module udp_complete_wrapper # (
                 output_eth_payload_if.TKEEP_ENABLE == 0 &&
                 ip_input_payload_if.TKEEP_ENABLE == 0 &&
                 ip_output_payload_if.TKEEP_ENABLE == 0 &&
-                udp_input_payload_if.TKEEP_ENABLE == 0 &&
-                udp_output_payload_if.TKEEP_ENABLE == 0)
+                udp_tx_payload_if.TKEEP_ENABLE == 0 &&
+                udp_rx_payload_if.TKEEP_ENABLE == 0)
         else $error("Assertion in %m failed, TKEEP_ENABLE parameter in the AXIS interfaces should be 0");
     end
 
@@ -127,8 +127,8 @@ module udp_complete_wrapper # (
                 output_eth_payload_if.TWAKEUP_ENABLE == 0 &&
                 ip_input_payload_if.TWAKEUP_ENABLE == 0 &&
                 ip_output_payload_if.TWAKEUP_ENABLE == 0 &&
-                udp_input_payload_if.TWAKEUP_ENABLE == 0 &&
-                udp_output_payload_if.TWAKEUP_ENABLE == 0)
+                udp_tx_payload_if.TWAKEUP_ENABLE == 0 &&
+                udp_rx_payload_if.TWAKEUP_ENABLE == 0)
         else $error("Assertion in %m failed, TWAKEUP_ENABLE parameter in the AXIS interfaces should be 0");
     end
 
@@ -198,50 +198,50 @@ module udp_complete_wrapper # (
       .m_ip_payload_axis_tuser(ip_output_payload_if.tuser),
 
       // Logic to PHY
-      .s_udp_hdr_valid(udp_input_header_if.hdr_valid),
-      .s_udp_hdr_ready(udp_input_header_if.hdr_ready),
-      .s_udp_ip_dscp(udp_input_header_if.ip_dscp),
-      .s_udp_ip_ecn(udp_input_header_if.ip_ecn),
-      .s_udp_ip_ttl(udp_input_header_if.ip_ttl),
-      .s_udp_ip_source_ip(udp_input_header_if.ip_source_ip),
-      .s_udp_ip_dest_ip(udp_input_header_if.ip_dest_ip),
-      .s_udp_source_port(udp_input_header_if.source_port),
-      .s_udp_dest_port(udp_input_header_if.dest_port),
-      .s_udp_length(udp_input_header_if.length),
-      .s_udp_checksum(udp_input_header_if.checksum),
-      .s_udp_payload_axis_tdata(udp_input_payload_if.tdata),
-      .s_udp_payload_axis_tvalid(udp_input_payload_if.tvalid),
-      .s_udp_payload_axis_tready(udp_input_payload_if.tready),
-      .s_udp_payload_axis_tlast(udp_input_payload_if.tlast),
-      .s_udp_payload_axis_tuser(udp_input_payload_if.tuser),
+      .s_udp_hdr_valid(udp_tx_header_if.hdr_valid),
+      .s_udp_hdr_ready(udp_tx_header_if.hdr_ready),
+      .s_udp_ip_dscp(udp_tx_header_if.ip_dscp),
+      .s_udp_ip_ecn(udp_tx_header_if.ip_ecn),
+      .s_udp_ip_ttl(udp_tx_header_if.ip_ttl),
+      .s_udp_ip_source_ip(udp_tx_header_if.ip_source_ip),
+      .s_udp_ip_dest_ip(udp_tx_header_if.ip_dest_ip),
+      .s_udp_source_port(udp_tx_header_if.source_port),
+      .s_udp_dest_port(udp_tx_header_if.dest_port),
+      .s_udp_length(udp_tx_header_if.length),
+      .s_udp_checksum(udp_tx_header_if.checksum),
+      .s_udp_payload_axis_tdata(udp_tx_payload_if.tdata),
+      .s_udp_payload_axis_tvalid(udp_tx_payload_if.tvalid),
+      .s_udp_payload_axis_tready(udp_tx_payload_if.tready),
+      .s_udp_payload_axis_tlast(udp_tx_payload_if.tlast),
+      .s_udp_payload_axis_tuser(udp_tx_payload_if.tuser),
 
-      .m_udp_hdr_valid(udp_output_header_if.hdr_valid),
-      .m_udp_hdr_ready(udp_output_header_if.hdr_ready),
-      .m_udp_eth_dest_mac(udp_output_header_if.eth_dest_mac),
-      .m_udp_eth_src_mac(udp_output_header_if.eth_src_mac),
-      .m_udp_eth_type(udp_output_header_if.eth_type),
-      .m_udp_ip_version(udp_output_header_if.ip_version),
-      .m_udp_ip_ihl(udp_output_header_if.ip_ihl),
-      .m_udp_ip_dscp(udp_output_header_if.ip_dscp),
-      .m_udp_ip_ecn(udp_output_header_if.ip_ecn),
-      .m_udp_ip_length(udp_output_header_if.ip_length),
-      .m_udp_ip_identification(udp_output_header_if.ip_identification),
-      .m_udp_ip_flags(udp_output_header_if.ip_flags),
-      .m_udp_ip_fragment_offset(udp_output_header_if.ip_fragment_offset),
-      .m_udp_ip_ttl(udp_output_header_if.ip_ttl),
-      .m_udp_ip_protocol(udp_output_header_if.ip_protocol),
-      .m_udp_ip_header_checksum(udp_output_header_if.ip_header_checksum),
-      .m_udp_ip_source_ip(udp_output_header_if.ip_source_ip),
-      .m_udp_ip_dest_ip(udp_output_header_if.ip_dest_ip),
-      .m_udp_source_port(udp_output_header_if.source_port),
-      .m_udp_dest_port(udp_output_header_if.dest_port),
-      .m_udp_length(udp_output_header_if.length),
-      .m_udp_checksum(udp_output_header_if.checksum),
-      .m_udp_payload_axis_tdata(udp_output_payload_if.tdata),
-      .m_udp_payload_axis_tvalid(udp_output_payload_if.tvalid),
-      .m_udp_payload_axis_tready(udp_output_payload_if.tready),
-      .m_udp_payload_axis_tlast(udp_output_payload_if.tlast),
-      .m_udp_payload_axis_tuser(udp_output_payload_if.tuser),
+      .m_udp_hdr_valid(udp_rx_header_if.hdr_valid),
+      .m_udp_hdr_ready(udp_rx_header_if.hdr_ready),
+      .m_udp_eth_dest_mac(udp_rx_header_if.eth_dest_mac),
+      .m_udp_eth_src_mac(udp_rx_header_if.eth_src_mac),
+      .m_udp_eth_type(udp_rx_header_if.eth_type),
+      .m_udp_ip_version(udp_rx_header_if.ip_version),
+      .m_udp_ip_ihl(udp_rx_header_if.ip_ihl),
+      .m_udp_ip_dscp(udp_rx_header_if.ip_dscp),
+      .m_udp_ip_ecn(udp_rx_header_if.ip_ecn),
+      .m_udp_ip_length(udp_rx_header_if.ip_length),
+      .m_udp_ip_identification(udp_rx_header_if.ip_identification),
+      .m_udp_ip_flags(udp_rx_header_if.ip_flags),
+      .m_udp_ip_fragment_offset(udp_rx_header_if.ip_fragment_offset),
+      .m_udp_ip_ttl(udp_rx_header_if.ip_ttl),
+      .m_udp_ip_protocol(udp_rx_header_if.ip_protocol),
+      .m_udp_ip_header_checksum(udp_rx_header_if.ip_header_checksum),
+      .m_udp_ip_source_ip(udp_rx_header_if.ip_source_ip),
+      .m_udp_ip_dest_ip(udp_rx_header_if.ip_dest_ip),
+      .m_udp_source_port(udp_rx_header_if.source_port),
+      .m_udp_dest_port(udp_rx_header_if.dest_port),
+      .m_udp_length(udp_rx_header_if.length),
+      .m_udp_checksum(udp_rx_header_if.checksum),
+      .m_udp_payload_axis_tdata(udp_rx_payload_if.tdata),
+      .m_udp_payload_axis_tvalid(udp_rx_payload_if.tvalid),
+      .m_udp_payload_axis_tready(udp_rx_payload_if.tready),
+      .m_udp_payload_axis_tlast(udp_rx_payload_if.tlast),
+      .m_udp_payload_axis_tuser(udp_rx_payload_if.tuser),
 
       .ip_rx_busy(ip_rx_busy),
       .ip_tx_busy(ip_tx_busy),
