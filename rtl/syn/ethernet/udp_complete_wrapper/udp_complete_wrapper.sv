@@ -197,6 +197,7 @@ module udp_complete_wrapper # (
       .m_ip_payload_axis_tlast(ip_output_payload_if.tlast),
       .m_ip_payload_axis_tuser(ip_output_payload_if.tuser),
 
+      // Logic to PHY
       .s_udp_hdr_valid(udp_input_header_if.hdr_valid),
       .s_udp_hdr_ready(udp_input_header_if.hdr_ready),
       .s_udp_ip_dscp(udp_input_header_if.ip_dscp),

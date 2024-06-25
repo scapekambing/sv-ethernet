@@ -56,10 +56,10 @@ module eth_top # (
 
    ETH_HEADER_IF tx_eth_header_if();
 
-   UDP_INPUT_HEADER_IF udp_input_header_if();
+   UDP_TX_HEADER_IF udp_tx_header_if(); // input header
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_input_payload_if();
 
-   UDP_OUTPUT_HEADER_IF udp_output_header_if();
+   UDP_RX_HEADER_IF udp_rx_header_if(); // output header
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_output_payload_if();
 
    /* Modules */
@@ -136,7 +136,7 @@ module eth_top # (
    assign ip_output_payload_if.tready = '1;
 
    // UDP loopback
-   var logic match = udp_output_header_if.dest_port == 1234;
+   var logic match = udp_rx_header_if.dest_port == 1234;
    var logic match_n = !match;
    var logic match_reg = '0;
    var logic match_reg_n = '0;
@@ -158,17 +158,17 @@ module eth_top # (
       end
    end
 
-   assign udp_input_header_if.hdr_valid = udp_output_header_if.hdr_valid && match;
-   assign udp_output_header_if.hdr_ready = (tx_eth_header_if.ready && match) || !match;
-   assign udp_input_header_if.ip_dscp = 0;
-   assign udp_input_header_if.ip_ecn = 0;
-   assign udp_input_header_if.ip_ttl = 64;
-   assign udp_input_header_if.ip_source_ip = local_ip;
-   assign udp_input_header_if.ip_dest_ip = udp_output_header_if.ip_source_ip;
-   assign udp_input_header_if.source_port = udp_output_header_if.dest_port;
-   assign udp_input_header_if.dest_port = udp_output_header_if.source_port;
-   assign udp_input_header_if.length = udp_output_header_if.length;
-   assign udp_input_header_if.checksum = 0;
+   assign udp_tx_header_if.hdr_valid = udp_rx_header_if.hdr_valid && match;
+   assign udp_rx_header_if.hdr_ready = (tx_eth_header_if.ready && match) || !match;
+   assign udp_tx_header_if.ip_dscp = 0;
+   assign udp_tx_header_if.ip_ecn = 0;
+   assign udp_tx_header_if.ip_ttl = 64;
+   assign udp_tx_header_if.ip_source_ip = local_ip;
+   assign udp_tx_header_if.ip_dest_ip = udp_rx_header_if.ip_source_ip;
+   assign udp_tx_header_if.source_port = udp_rx_header_if.dest_port;
+   assign udp_tx_header_if.dest_port = udp_rx_header_if.source_port;
+   assign udp_tx_header_if.length = udp_rx_header_if.length;
+   assign udp_tx_header_if.checksum = 0;
 
    assign udp_input_payload_if.tdata = udp_output_payload_if.tdata;
    assign udp_input_payload_if.tvalid = udp_output_payload_if.tvalid && match_reg;
@@ -195,10 +195,10 @@ module eth_top # (
       .ip_output_header_if(ip_output_header_if.Output),
       .ip_output_payload_if(ip_output_payload_if.Transmitter),
 
-      .udp_input_header_if(udp_input_header_if.Input),
+      .udp_tx_header_if(udp_tx_header_if.Input),
       .udp_input_payload_if(udp_input_payload_if.Receiver),
 
-      .udp_output_header_if(udp_output_header_if.Output),
+      .udp_rx_header_if(udp_rx_header_if.Output),
       .udp_output_payload_if(udp_output_payload_if.Transmitter),
 
       .ip_rx_busy(),
