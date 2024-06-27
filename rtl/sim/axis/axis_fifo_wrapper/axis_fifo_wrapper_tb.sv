@@ -2,14 +2,12 @@
  * @file axis_fifo_wrapper_tb.sv
  *
  * @author Mani Magnusson
- * @date   2023
+ * @date   2024
  *
  * @brief axis_fifo_wrapper testbench
  */
 
 /* TODO:
- *  - Write Python code
- *  - Test everything
  *  - Implement back-to-back transfers (needs BFM modifications)
  */
 

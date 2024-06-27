@@ -56,10 +56,10 @@ module eth_top # (
 
    ETH_HEADER_IF tx_eth_header_if();
 
-   UDP_TX_HEADER_IF udp_tx_header_if(); // input header
+   UDP_TX_HEADER_IF udp_tx_header_if();
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if();
 
-   UDP_RX_HEADER_IF udp_rx_header_if(); // output header
+   UDP_RX_HEADER_IF udp_rx_header_if();
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if();
 
    /* Modules */
