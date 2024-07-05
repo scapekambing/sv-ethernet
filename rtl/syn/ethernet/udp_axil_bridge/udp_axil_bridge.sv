@@ -97,7 +97,12 @@ module udp_axil_bridge # (
     always_ff @ (posedge clk) begin
         if (reset) begin
             // Reset signals
-            state = STATE_RX_HEADER;
+            state           <= STATE_RX_HEADER;
+            axil_if.awvalid <= 1'b0;
+            axil_if.wvalid  <= 1'b0;
+            axil_if.bready  <= 1'b0;
+            axil_if.arvalid <= 1'b0;
+            axil_if.rready  <= 1'b0;
         end else begin
             case (state)
                 // Read in a UDP header
