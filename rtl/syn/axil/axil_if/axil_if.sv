@@ -13,7 +13,7 @@ interface AXIL_IF # (
     parameter int ADDR_WIDTH  = 32,
     parameter int DATA_WIDTH   = 32
 );
-    localparam STRB_WIDTH = DATA_WIDTH / 8;
+    localparam int STRB_WIDTH = DATA_WIDTH / 8;
     
     // Write address channel
     var logic        awvalid; // Single bit

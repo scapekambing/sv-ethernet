@@ -12,7 +12,7 @@
 
 package udp_tx_header_bfm;
 class UDP_TX_HEADER_SLAVE_BFM # ();
-    typedef virtual UDP_TX_HEADER_IF v_udp_tx_header_if_t();
+    typedef virtual UDP_TX_HEADER_IF v_udp_tx_header_if_t;
 
     v_udp_tx_header_if_t udp_tx_header_if;
 
@@ -21,7 +21,7 @@ class UDP_TX_HEADER_SLAVE_BFM # ();
     endfunction
 
     task automatic reset_task();
-        this.udp_tx_header_if.tready = 1'b0;
+        this.udp_tx_header_if.hdr_ready = 1'b0;
     endtask
 
     task automatic transfer(

@@ -285,6 +285,7 @@ class UDP_RX_HEADER_MASTER_BFM # ();
             ip_version,
             ip_ihl,
             ip_dscp,
+            ip_ecn,
             ip_length,
             ip_identification,
             ip_flags,

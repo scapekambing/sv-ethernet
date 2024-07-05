@@ -16,10 +16,11 @@ import axil_bfm::*;
 import axis_bfm::*;
 import udp_tx_header_bfm::*;
 import udp_rx_header_bfm::*;
+import udp_axil_bridge_types::*;
 
 module udp_axil_bridge_tb ();
     parameter bit [15:0] UDP_SOURCE_PORT = 8891;
-    parameter bit [15:0] UDP_DESTPORT = 1234;
+    parameter bit [15:0] UDP_DEST_PORT = 1234;
     parameter int REQUEST_BUFFER_SIZE = 64;
 
     parameter int AXIL_DATA_WIDTH = 32;
@@ -55,7 +56,7 @@ module udp_axil_bridge_tb ();
     UDP_RX_HEADER_MASTER_BFM udp_rx_header_bfm;
     AXIS_Master_BFM # (.user_width(1)) udp_rx_payload_bfm;
 
-    AXIL_Master_BFM # (
+    AXIL_Slave_BFM # (
         .ADDR_WIDTH(AXIL_ADDR_WIDTH),
         .DATA_WIDTH(AXIL_DATA_WIDTH)
     ) axil_bfm;
@@ -88,11 +89,16 @@ module udp_axil_bridge_tb ();
         end
 
         `TEST_CASE("single_write") begin
-            static request_union_t req;
+            logic [AXIL_ADDR_WIDTH-1:0] address;
+            logic [AXIL_DATA_WIDTH-1:0] data;
+            logic [axil_if.STRB_WIDTH-1:0] strobe;
+            logic [2:0] awprot;
+
+            request_union_t req;
             req.request.opcode = WRITE_DATA;
             req.request.address = 30'h5DE9A01;
             req.request.data = 32'hD463AD5F;
-            udp_rx_header_bfm.simple_transfer(clk, UDP_SOURCE_PORT, UDP_DEST_PORT, 8*1);
+            udp_rx_header_bfm.simple_transfer(clk, UDP_SOURCE_PORT, UDP_DEST_PORT, 8*1, 0);
 
             udp_rx_payload_bfm.transfer(.clk(clk), .data(req.bytes[0]));
             udp_rx_payload_bfm.transfer(.clk(clk), .data(req.bytes[1]));
@@ -102,6 +108,11 @@ module udp_axil_bridge_tb ();
             udp_rx_payload_bfm.transfer(.clk(clk), .data(req.bytes[5]));
             udp_rx_payload_bfm.transfer(.clk(clk), .data(req.bytes[6]));
             udp_rx_payload_bfm.transfer(.clk(clk), .data(req.bytes[7]), .last(1'b1));
+
+            axil_bfm.write(clk, address, data, strobe, awprot);
+
+            `CHECK_EQUAL(address, 32'h05DE9A01);
+            `CHECK_EQUAL(data, 32'hD463AD5F);
 
             /* TODO:
                 Do an AXIL transfer and test if the data out of that is what is expected
