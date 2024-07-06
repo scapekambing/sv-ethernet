@@ -62,7 +62,6 @@ class AXIS_Slave_BFM # (
             @ (posedge clk);
         end while (this.axis_if.tvalid === 1'b0);
         
-
         data = this.axis_if.tdata;
         strobe = this.axis_if.tstrb;
         keep = this.axis_if.tkeep;

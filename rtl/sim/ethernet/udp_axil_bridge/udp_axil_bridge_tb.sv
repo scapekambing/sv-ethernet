@@ -94,6 +94,25 @@ module udp_axil_bridge_tb ();
             logic [axil_if.STRB_WIDTH-1:0] strobe;
             logic [2:0] awprot;
 
+            logic [5:0] ip_dscp;
+            logic [1:0] ip_ecn;
+            logic [7:0] ip_ttl;
+            logic [31:0] ip_source_ip;
+            logic [31:0] ip_dest_ip;
+            logic [15:0] source_port;
+            logic [15:0] dest_port;
+            logic [15:0] length;
+            logic [15:0] checksum;
+
+            logic [7:0] txdata;
+            logic [1:0] txstrb;
+            logic [1:0] txkeep;
+            logic       txlast;
+            logic       txid;
+            logic       txdest;
+            logic       txuser;
+            logic       txwakeup;
+
             request_union_t req;
             req.request.opcode = WRITE_DATA;
             req.request.address = 30'h5DE9A01;
@@ -111,9 +130,46 @@ module udp_axil_bridge_tb ();
 
             axil_bfm.write(clk, address, data, strobe, awprot);
 
-            `CHECK_EQUAL(5, 5);
-            //`CHECK_EQUAL(address, 32'h05DE9A01, "Failed address check");
-            //`CHECK_EQUAL(data, 32'hD463AD5F, "Failed data check");
+            `CHECK_EQUAL(address, 32'h05DE9A01);
+            `CHECK_EQUAL(data, 32'hD463AD5F);
+
+            udp_tx_header_bfm.transfer(
+                clk,
+                ip_dscp,
+                ip_ecn,
+                ip_ttl,
+                ip_source_ip,
+                ip_dest_ip,
+                source_port,
+                dest_port,
+                length,
+                checksum
+            );
+
+            `CHECK_EQUAL(source_port, UDP_DEST_PORT);
+            `CHECK_EQUAL(dest_port, UDP_SOURCE_PORT);
+            `CHECK_EQUAL(ip_source_ip, {8'd192, 8'd168, 8'd1, 8'd111});
+            `CHECK_EQUAL(ip_dest_ip, {8'd192, 8'd168, 8'd1, 8'd152});
+
+            req.request.opcode = WRITE_OK;
+
+            for (int i = 0; i < 8; i++) begin
+                udp_tx_payload_bfm.transfer(
+                    clk,
+                    txdata,
+                    txstrb,
+                    txkeep,
+                    txlast,
+                    txid,
+                    txdest,
+                    txuser,
+                    txwakeup
+                );
+                $display("%0h == 7: %0h", i, i == 7);
+                `CHECK_EQUAL(txdata, req.bytes[i]);
+                `CHECK_EQUAL(txlast, 1'(i == 7));
+                `CHECK_EQUAL(txuser, 0);
+            end
 
             /* TODO:
                 Do an AXIL transfer and test if the data out of that is what is expected

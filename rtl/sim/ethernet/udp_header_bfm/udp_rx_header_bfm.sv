@@ -274,8 +274,8 @@ class UDP_RX_HEADER_MASTER_BFM # ();
         logic [7:0]   ip_ttl = 64;
         logic [7:0]   ip_protocol = 0;
         logic [15:0]  ip_header_checksum = 0;
-        logic [31:0]  ip_source_ip = 0;
-        logic [31:0]  ip_dest_ip = 0;
+        logic [31:0]  ip_source_ip = {8'd192, 8'd168, 8'd1, 8'd152};
+        logic [31:0]  ip_dest_ip = {8'd192, 8'd168, 8'd1, 8'd111};
 
         transfer(
             clk,
