@@ -151,6 +151,8 @@ module top #(
     assign mii_if.crs = phy_crs;
     assign mii_if.col = phy_col;
 
+    AXIL_IF axil_if();
+
     eth_top # (
         .TARGET("XILINX")
     ) eth_inst (
@@ -159,11 +161,22 @@ module top #(
 
         .mii_if(mii_if.MAC),
 
+        .axil_if(axil_if.Master),
+
         .local_mac(48'h02_00_00_00_00_00),
         .local_ip({8'd192, 8'd168, 8'd1, 8'd128}),
         .gateway_ip({8'd192, 8'd168, 8'd1, 8'd1}),
         .subnet_mask({8'd255, 8'd255, 8'd255, 8'd0}),
         .clear_arp_cache(0)
+    );
+
+    axil_ram_wrapper # (
+        // Using default
+    ) axil_ram_wrapper_inst (
+        .clk(clk_int),
+        .reset(rst_int),
+
+        .axil_if(axil_if.Slave)
     );
 
 endmodule

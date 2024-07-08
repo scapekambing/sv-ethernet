@@ -16,7 +16,11 @@ create_project SystemVerilog-Ethernet-Wrapped ./$outputDir -part $fullPartName -
 # Add files to the project - either the folder containing the files or the files themselves
 add_files $projectDir/lib/verilog-ethernet/lib
 add_files $projectDir/lib/verilog-ethernet/rtl
-add_files $projectDir/rtl/syn/axi-stream
+add_files $projectDir/lib/verilog-axis/rtl
+add_files $projectDir/lib/verilog-axi/rtl
+
+add_files $projectDir/rtl/syn/axis/axis_if
+add_files $projectDir/rtl/syn/axil
 add_files $projectDir/rtl/syn/ethernet
 add_files $projectDir/rtl/syn/top.sv
 

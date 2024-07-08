@@ -10,7 +10,8 @@
 `default_nettype none
 
 module axil_ram_wrapper # (
-    parameter bit PIPELINE_OUTPUT = 1'b0
+    parameter bit PIPELINE_OUTPUT = 1'b0,
+    parameter int VALID_ADDRESS_BITS = 16
 ) (
     input var logic clk,
     input var logic reset,
@@ -18,20 +19,26 @@ module axil_ram_wrapper # (
     AXIL_IF.Slave axil_if
 );
 
-localparam int ADDR_WIDTH = axil_if.ADDR_WIDTH;
-localparam int DATA_WIDTH = axil_if.DATA_WIDTH;
-localparam int STRB_WIDTH = DATA_WIDTH / 8;
+//localparam int ADDR_WIDTH = axil_if.ADDR_WIDTH;
+//localparam int DATA_WIDTH = axil_if.DATA_WIDTH;
+//localparam int STRB_WIDTH = DATA_WIDTH / 8;
+
+initial begin
+        assert (VALID_ADDRESS_BITS <= axil_if.ADDR_WIDTH &&
+                VALID_ADDRESS_BITS <= axil_if.DATA_WIDTH)
+        else $error("Assertion in %m failed, valid address bits can't be larger than interface widths");
+    end
 
 axil_ram # (
-    .DATA_WIDTH(DATA_WIDTH),
-    .ADDR_WIDTH(ADDR_WIDTH),
-    .STRB_WIDTH(STRB_WIDTH),
+    .DATA_WIDTH(axil_if.DATA_WIDTH),
+    .ADDR_WIDTH(VALID_ADDRESS_BITS),
+    .STRB_WIDTH(axil_if.STRB_WIDTH),
     .PIPELINE_OUTPUT(PIPELINE_OUTPUT)
 ) axil_ram_inst (
     .clk(clk),
     .rst(reset),
     
-    .s_axil_awaddr(axil_if.awaddr),
+    .s_axil_awaddr(axil_if.awaddr[VALID_ADDRESS_BITS-1:0]),
     .s_axil_awprot(axil_if.awprot),
     .s_axil_awvalid(axil_if.awvalid),
     .s_axil_awready(axil_if.awready),
@@ -45,7 +52,7 @@ axil_ram # (
     .s_axil_bvalid(axil_if.bvalid),
     .s_axil_bready(axil_if.bready),
 
-    .s_axil_araddr(axil_if.araddr),
+    .s_axil_araddr(axil_if.araddr[VALID_ADDRESS_BITS-1:0]),
     .s_axil_arprot(axil_if.arprot),
     .s_axil_arvalid(axil_if.arvalid),
     .s_axil_arready(axil_if.arready),

@@ -1,14 +1,49 @@
 from scapy.all import *
+import struct
 import socket
 
-UDP_IP = "192.168.1.128"
+OP_WRITE_DATA = 0
+OP_READ_DATA = 1
+OP_WRITE_OK = 2
+OP_READ_OK = 3
+
+UDP_IP = "192.168.1.128" # The IP address of the FPGA
 UDP_PORT = 1234
-MESSAGE = b"Hello world!"
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+class Packet:
+    def __init__(self, opcode, address, data):
+        self.opcode = opcode
+        self.address = address
+        self.data = data
+    
+    def pack(self):
+        return struct.pack('!HLL', self.opcode, self.address, self.data)
+    
+    def unpack(cls, packed_data):
+        opcode, address, data = struct.unpack('!HLL', packed_data)
+        return cls(opcode, address, data)
 
-sock.bind((UDP_IP, UDP_PORT))
+def write_single(address, data):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #sock.setsockopt(socket.SOL_SOCKET, 25, str("Ethernet 2" + '\0').encode('utf-8'))
 
-data, addr = sock.recvfrom(16)
-print("Recieved message: %s" % data)
+    #sock.bind(("192.168.1.2", 1234))
+    #print(f"Socket bound to: {sock.getsockname()}")
+
+    packet = Packet(OP_WRITE_DATA, address, data)
+
+    print("Created packet, sending")
+    sock.sendto(packet.pack(), (UDP_IP, UDP_PORT))
+
+    print("Sent packet, receiving")
+    received_data = sock.recv(8)
+    packet = Packet.unpack(received_data)
+
+    if packet.opcode == OP_WRITE_OK:
+        return True
+    else:
+        return False
+
+if __name__ == "__main__":
+    success = write_single(8562, 69696969)
+    print(success)

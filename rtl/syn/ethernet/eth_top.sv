@@ -17,6 +17,8 @@ module eth_top # (
 
    MII_IF.MAC mii_if,
 
+   AXIL_IF.Master axil_if,
+
    input var logic [47:0] local_mac,
    input var logic [31:0] local_ip,
    input var logic [31:0] gateway_ip,
@@ -61,6 +63,18 @@ module eth_top # (
 
    UDP_RX_HEADER_IF udp_rx_header_if();
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if();
+
+   // Unused interfaces
+   IP_INPUT_HEADER_IF ip_input_header_if();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) ip_input_payload_if();
+   IP_OUTPUT_HEADER_IF ip_output_header_if();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) ip_output_payload_if();
+
+   // Driving necessary signals to allow operation with unused interfaces
+   assign ip_input_header_if.hdr_valid = '0;
+   assign ip_input_payload_if.tvalid = '0;
+   assign ip_output_header_if.hdr_ready = '1;
+   assign ip_output_payload_if.tready = '1;
 
    /* Modules */
 
@@ -123,60 +137,6 @@ module eth_top # (
       .error_header_early_termination()
    );
 
-   // Unused interfaces
-   IP_INPUT_HEADER_IF ip_input_header_if();
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) ip_input_payload_if();
-   IP_OUTPUT_HEADER_IF ip_output_header_if();
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) ip_output_payload_if();
-
-   // Driving necessary signals to allow operation with unused interfaces
-   assign ip_input_header_if.hdr_valid = '0;
-   assign ip_input_payload_if.tvalid = '0;
-   assign ip_output_header_if.hdr_ready = '1;
-   assign ip_output_payload_if.tready = '1;
-
-   // UDP loopback
-   var logic match = udp_rx_header_if.dest_port == 1234;
-   var logic match_n = !match;
-   var logic match_reg = '0;
-   var logic match_reg_n = '0;
-
-   always_ff @ (posedge clk) begin
-      if (reset) begin
-         match_reg <= '0;
-         match_reg_n <= '0;
-      end else begin
-         if (udp_rx_payload_if.tvalid) begin
-            if ((!match_reg && !match_reg_n) || (udp_rx_payload_if.tvalid && udp_rx_payload_if.tready && udp_rx_payload_if.tlast)) begin
-               match_reg <= match;
-               match_reg_n <= match_n;
-            end
-         end else begin
-            match_reg <= '0;
-            match_reg_n <= '0;
-         end
-      end
-   end
-
-   assign udp_tx_header_if.hdr_valid = udp_rx_header_if.hdr_valid && match;
-   assign udp_rx_header_if.hdr_ready = (tx_eth_header_if.ready && match) || !match;
-   assign udp_tx_header_if.ip_dscp = 0;
-   assign udp_tx_header_if.ip_ecn = 0;
-   assign udp_tx_header_if.ip_ttl = 64;
-   assign udp_tx_header_if.ip_source_ip = local_ip;
-   assign udp_tx_header_if.ip_dest_ip = udp_rx_header_if.ip_source_ip;
-   assign udp_tx_header_if.source_port = udp_rx_header_if.dest_port;
-   assign udp_tx_header_if.dest_port = udp_rx_header_if.source_port;
-   assign udp_tx_header_if.length = udp_rx_header_if.length;
-   assign udp_tx_header_if.checksum = 0;
-
-   assign udp_tx_payload_if.tdata = udp_rx_payload_if.tdata;
-   assign udp_tx_payload_if.tvalid = udp_rx_payload_if.tvalid && match_reg;
-   assign udp_rx_payload_if.tready = (udp_tx_payload_if.tready && match_reg) || match_reg_n;
-   assign udp_tx_payload_if.tlast = udp_rx_payload_if.tlast;
-   assign udp_tx_payload_if.tuser = udp_rx_payload_if.tuser;
-
-   // Skipping IP
    udp_complete_wrapper # (
       // Using default values
    ) udp_complete_wapper_inst (
@@ -220,6 +180,21 @@ module eth_top # (
       .gateway_ip(gateway_ip),
       .subnet_mask(subnet_mask),
       .clear_arp_cache(clear_arp_cache)
+   );
+
+   udp_axil_bridge # (
+      // Using default values
+   ) udp_axil_bridge_inst (
+      .clk(clk),
+      .reset(reset),
+
+      .udp_tx_header_if(udp_tx_header_if.Source),
+      .udp_tx_payload_if(udp_tx_payload_if.Transmitter),
+
+      .udp_rx_header_if(udp_rx_header_if.Sink),
+      .udp_rx_payload_if(udp_rx_payload_if.Receiver),
+
+      .axil_if(axil_if)
    );
 
 endmodule
