@@ -25,7 +25,9 @@ module eth_top # (
    input var logic [31:0] subnet_mask,
    input var logic clear_arp_cache,
 
-   input var logic screamer_enable
+   input var logic screamer_enable,
+
+   input var logic [2:0] udp_payload_selection
 );
    localparam int AXIS_TDATA_WIDTH = 8;
    localparam bit AXIS_TKEEP_ENABLE = AXIS_TDATA_WIDTH > 8;
@@ -189,36 +191,83 @@ module eth_top # (
       .clear_arp_cache(clear_arp_cache)
    );
 
-   /*
+   UDP_TX_HEADER_IF [1:0] udp_tx_header_if_mux;
+   AXIS_IF [1:0] # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if_mux;
+   UDP_RX_HEADER_IF [1:0] udp_rx_header_if_mux;
+   AXIS_IF [1:0] # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux;
+
+   udp_mux_wrapper # (
+      S_COUNT = 3
+   ) udp_mux_inst (
+      .clk(clk),
+      .reset(reset),
+
+      .udp_tx_header_if_sink(udp_tx_header_if_mux),
+      .udp_tx_payload_if_sink(udp_tx_payload_if_mux),
+      .udp_tx_header_if_source(udp_tx_header_if),
+      .udp_tx_payload_if_source(udp_tx_payload_if),
+
+      .enable(1'b1),
+      .select(udp_payload_selection)
+   );
+
+   udp_demux_wrapper # (
+      M_COUNT = 3
+   ) udp_demux_inst (
+      .clk(clk),
+      .reset(reset),
+      
+      .udp_rx_header_if_source(udp_rx_header_if_mux),
+      .udp_rx_payload_if_source(udp_rx_payload_if_mux),
+      .udp_rx_header_if_sink(udp_rx_header_if),
+      .udp_rx_payload_if_sink(udp_rx_payload_if),
+      
+      .enable(1'b1),
+      .drop(1'b0),
+      .select(udp_payload_selection)
+   );
+
    udp_spam # (
       // Using defaults
    ) udp_spam_inst (
       .clk(clk),
       .reset(reset),
-      .udp_tx_header_if(udp_tx_header_if),
-      .udp_tx_payload_if(udp_tx_payload_if),
-      .udp_rx_header_if(udp_rx_header_if),
-      .udp_rx_payload_if(udp_rx_payload_if),
+
+      .udp_tx_header_if(udp_tx_header_if_mux[2]),
+      .udp_tx_payload_if(udp_tx_payload_if_mux[2]),
+      .udp_rx_header_if(udp_rx_header_if_mux[2]),
+      .udp_rx_payload_if(udp_rx_payload_if_mux[2]),
+
       .enable(screamer_enable)
    );
-   */
+
+   udp_loopback # (
+      // Using defaults
+   ) udp_loopback_inst (
+      .clk(clk),
+      .reset(reset),
+      .local_ip(local_ip),
+
+      .udp_tx_header_if(udp_tx_header_if_mux[1]),
+      .udp_tx_payload_if(udp_tx_payload_if_mux[1]),
+      .udp_rx_header_if(udp_rx_header_if_mux[1]),
+      .udp_rx_payload_if(udp_rx_payload_if_mux[1])
+   );
    
-   /*
    udp_axil_bridge # (
       // Using default values
    ) udp_axil_bridge_inst (
       .clk(clk),
       .reset(reset),
 
-      .udp_tx_header_if(udp_tx_header_if.Source),
-      .udp_tx_payload_if(udp_tx_payload_if.Transmitter),
+      .udp_tx_header_if(udp_tx_header_if_mux[0]),
+      .udp_tx_payload_if(udp_tx_payload_if_mux[0]),
 
-      .udp_rx_header_if(udp_rx_header_if.Sink),
-      .udp_rx_payload_if(udp_rx_payload_if.Receiver),
+      .udp_rx_header_if(udp_rx_header_if_mux[0]),
+      .udp_rx_payload_if(udp_rx_payload_if_mux[0]),
 
       .axil_if(axil_if)
    );
-   */
    
    
    /*
@@ -309,18 +358,6 @@ module eth_top # (
       udp_tx_hdr_valid        <= udp_tx_header_if.hdr_valid;
       udp_tx_hdr_ready        <= udp_tx_header_if.hdr_ready;
    end
-
-   udp_loopback # (
-      // Using defaults
-   ) udp_loopback_inst (
-      .clk(clk),
-      .reset(reset),
-      .local_ip(local_ip),
-      .udp_tx_header_if(udp_tx_header_if),
-      .udp_tx_payload_if(udp_tx_payload_if),
-      .udp_rx_header_if(udp_rx_header_if),
-      .udp_rx_payload_if(udp_rx_payload_if)
-   );
 
    ila_eth ila_eth_inst (
 	   .clk(clk), // input wire clk

@@ -147,7 +147,7 @@ module top #(
         .BANDWIDTH("OPTIMIZED"),
         .CLKOUT0_DIVIDE_F(30),
         .CLKOUT0_DUTY_CYCLE(0.5),
-        .CLKOUT0_PHASE(180),
+        .CLKOUT0_PHASE(0),
         .CLKOUT1_DIVIDE(1),
         .CLKOUT1_DUTY_CYCLE(0.5),
         .CLKOUT1_PHASE(0),
@@ -240,7 +240,9 @@ module top #(
         .subnet_mask({8'd255, 8'd255, 8'd255, 8'd0}),
         .clear_arp_cache(0),
         
-        .screamer_enable(sw[3])
+        .screamer_enable(sw[3]),
+
+        .udp_payload_selection(sw[1:0])
     );
 
     axil_ram_wrapper # (
@@ -253,6 +255,10 @@ module top #(
     );
 
     always_ff @ (posedge clk_int)
-        led4 <= sw[3];
+        led4 <= sw[0];
+        led5 <= sw[1];
+        led6 <= sw[2];
+        led7 <= sw[3];
+
 
 endmodule
