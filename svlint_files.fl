@@ -8,3 +8,4 @@ rtl/syn/ethernet/udp_rx_header_if/udp_rx_header_if.sv
 rtl/sim/ethernet/udp_header_bfm/udp_rx_header_bfm.sv
 rtl/syn/ethernet/udp_axil_bridge/udp_axil_bridge.sv
 rtl/sim/ethernet/udp_axil_bridge/udp_axil_bridge_tb.sv
+rtl/syn/ethernet/udp_arb_mux_wrapper/udp_arb_mux_wrapper.sv

@@ -103,8 +103,11 @@ module udp_axil_bridge # (
             axil_if.bready  <= 1'b0;
             axil_if.arvalid <= 1'b0;
             axil_if.rready  <= 1'b0;
+            
             udp_tx_header_if.hdr_valid <= 1'b0;
             udp_tx_payload_if.tvalid <= 1'b0;
+            udp_rx_header_if.hdr_ready<= 1'b0;
+            udp_rx_payload_if.tready <= 1'b0;
         end else begin
             case (state)
                 // Read in a UDP header

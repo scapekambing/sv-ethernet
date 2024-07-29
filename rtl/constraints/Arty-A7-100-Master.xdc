@@ -47,13 +47,13 @@ set_false_path -to [get_ports {led4 led5 led6 led7}]
 set_output_delay 0 [get_ports {led4 led5 led6 led7}]
 
 ## Switches
-#set_property -dict {LOC A8  IOSTANDARD LVCMOS33} [get_ports {sw[0]}]
-#set_property -dict {LOC C11 IOSTANDARD LVCMOS33} [get_ports {sw[1]}]
-#set_property -dict {LOC C10 IOSTANDARD LVCMOS33} [get_ports {sw[2]}]
-#set_property -dict {LOC A10 IOSTANDARD LVCMOS33} [get_ports {sw[3]}]
+set_property -dict {LOC A8  IOSTANDARD LVCMOS33} [get_ports {sw[0]}]
+set_property -dict {LOC C11 IOSTANDARD LVCMOS33} [get_ports {sw[1]}]
+set_property -dict {LOC C10 IOSTANDARD LVCMOS33} [get_ports {sw[2]}]
+set_property -dict {LOC A10 IOSTANDARD LVCMOS33} [get_ports {sw[3]}]
 
-#set_false_path -from [get_ports {sw[*]}]
-#set_input_delay 0 [get_ports {sw[*]}]
+set_false_path -from [get_ports {sw[*]}]
+set_input_delay 0 [get_ports {sw[*]}]
 
 ## Buttons
 #set_property -dict {LOC D9  IOSTANDARD LVCMOS33} [get_ports {btn[0]}]
@@ -136,6 +136,22 @@ set_property -dict {LOC C16 IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 12} [get_ports p
 
 create_clock -period 40.000 -name phy_rx_clk [get_ports phy_rx_clk]
 create_clock -period 40.000 -name phy_tx_clk [get_ports phy_tx_clk]
+
+create_generated_clock -name phy_rx_clk_int [get_nets phy_rx_clk_int]
+
+set_output_delay -clock phy_tx_clk -max 11 [get_ports phy_txd]
+set_output_delay -clock phy_tx_clk -max 11 [get_ports phy_tx_en]
+
+set_output_delay -clock phy_tx_clk -min 1 [get_ports phy_txd]
+set_output_delay -clock phy_tx_clk -min 1 [get_ports phy_tx_en]
+
+set_input_delay -clock phy_rx_clk_int -min 9 [get_ports phy_rxd]
+set_input_delay -clock phy_rx_clk_int -min 9 [get_ports phy_rx_dv]
+set_input_delay -clock phy_rx_clk_int -min 9 [get_ports phy_rx_er]
+
+set_input_delay -clock phy_rx_clk_int -max 31 [get_ports phy_rxd]
+set_input_delay -clock phy_rx_clk_int -max 31 [get_ports phy_rx_dv]
+set_input_delay -clock phy_rx_clk_int -max 31 [get_ports phy_rx_er]
 
 set_false_path -to [get_ports {phy_ref_clk phy_reset_n}]
 set_output_delay 0 [get_ports {phy_ref_clk phy_reset_n}]
