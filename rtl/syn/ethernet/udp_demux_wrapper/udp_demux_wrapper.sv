@@ -12,14 +12,14 @@
 module udp_demux_wrapper # (
     parameter int M_COUNT = 2
 ) (
-    input var logic                         clk,
-    input var logic                         reset,
+    input var logic         clk,
+    input var logic         reset,
 
-    UDP_RX_HEADER_IF.Source [M_COUNT-1:0]   udp_rx_header_if_source,
-    AXIS_IF.Transmitter [M_COUNT-1:0]       udp_rx_payload_if_source,
+    UDP_RX_HEADER_IF.Source udp_rx_header_if_source [M_COUNT],
+    AXIS_IF.Transmitter     udp_rx_payload_if_source [M_COUNT],
 
-    UDP_RX_HEADER_IF.Sink                   udp_rx_header_if_sink,
-    AXIS_IF.Receiver                        udp_rx_payload_if_sink,
+    UDP_RX_HEADER_IF.Sink   udp_rx_header_if_sink,
+    AXIS_IF.Receiver        udp_rx_payload_if_sink,
 
     input var logic                         enable,
     input var logic                         drop,
@@ -59,6 +59,13 @@ module udp_demux_wrapper # (
         end
     endgenerate
 
+    localparam int TDATA_WIDTH = udp_rx_payload_if_sink.TDATA_WIDTH > 0 ? udp_rx_payload_if_sink.TDATA_WIDTH : 1;
+    localparam int TID_WIDTH = udp_rx_payload_if_sink.TID_WIDTH > 0 ? udp_rx_payload_if_sink.TID_WIDTH : 1;
+    localparam int TDEST_WIDTH = udp_rx_payload_if_sink.TDEST_WIDTH > 0 ? udp_rx_payload_if_sink.TDEST_WIDTH : 1;
+    localparam int TUSER_WIDTH = udp_rx_payload_if_sink.TUSER_WIDTH > 0 ? udp_rx_payload_if_sink.TUSER_WIDTH : 1;
+    localparam int TKEEP_ENABLE = udp_rx_payload_if_sink.TKEEP_ENABLE;
+    localparam int TKEEP_WIDTH = TDATA_WIDTH / 8;
+
     var logic [M_COUNT-1:0]            temp_udp_hdr_valid;
     var logic [M_COUNT-1:0]            temp_udp_hdr_ready;
     var logic [M_COUNT*48-1:0]         temp_eth_dest_mac;
@@ -82,14 +89,14 @@ module udp_demux_wrapper # (
     var logic [M_COUNT*16-1:0]         temp_udp_length;
     var logic [M_COUNT*16-1:0]         temp_udp_checksum;
 
-    var logic [M_COUNT*DATA_WIDTH-1:0] temp_udp_payload_axis_tdata;
-    var logic [M_COUNT*KEEP_WIDTH-1:0] temp_udp_payload_axis_tkeep;
-    var logic [M_COUNT-1:0]            temp_udp_payload_axis_tvalid;
-    var logic [M_COUNT-1:0]            temp_udp_payload_axis_tready;
-    var logic [M_COUNT-1:0]            temp_udp_payload_axis_tlast;
-    var logic [M_COUNT*ID_WIDTH-1:0]   temp_udp_payload_axis_tid;
-    var logic [M_COUNT*DEST_WIDTH-1:0] temp_udp_payload_axis_tdest;
-    var logic [M_COUNT*USER_WIDTH-1:0] temp_udp_payload_axis_tuser;
+    var logic [M_COUNT*TDATA_WIDTH-1:0] temp_udp_payload_axis_tdata;
+    var logic [M_COUNT*TKEEP_WIDTH-1:0] temp_udp_payload_axis_tkeep;
+    var logic [M_COUNT-1:0]             temp_udp_payload_axis_tvalid;
+    var logic [M_COUNT-1:0]             temp_udp_payload_axis_tready;
+    var logic [M_COUNT-1:0]             temp_udp_payload_axis_tlast;
+    var logic [M_COUNT*TID_WIDTH-1:0]   temp_udp_payload_axis_tid;
+    var logic [M_COUNT*TDEST_WIDTH-1:0] temp_udp_payload_axis_tdest;
+    var logic [M_COUNT*TUSER_WIDTH-1:0] temp_udp_payload_axis_tuser;
 
     generate
         for (genvar i = 0; i < M_COUNT; i++) begin
@@ -102,7 +109,7 @@ module udp_demux_wrapper # (
                 udp_rx_header_if_source[i].eth_type             = temp_eth_type[16*i+15:16*i];
 
                 udp_rx_header_if_source[i].ip_version           = temp_ip_version[4*i+3:4*i];
-                udp_rx_header_if_source[i].ip_ihl               = temp_ip_ihl[4*i+4:4*i];
+                udp_rx_header_if_source[i].ip_ihl               = temp_ip_ihl[4*i+3:4*i];
                 udp_rx_header_if_source[i].ip_dscp              = temp_ip_dscp[6*i+5:6*i];
                 udp_rx_header_if_source[i].ip_ecn               = temp_ip_ecn[2*i+1:2*i];
                 udp_rx_header_if_source[i].ip_length            = temp_ip_length[16*i+15:16*i];
@@ -132,13 +139,6 @@ module udp_demux_wrapper # (
             end
         end
     endgenerate
-
-    localparam int TDATA_WIDTH = udp_rx_payload_if_sink.TDATA_WIDTH;
-    localparam int TID_WIDTH = udp_rx_payload_if_sink.TID_WIDTH;
-    localparam int TDEST_WIDTH = udp_rx_payload_if_sink.TDEST_WIDTH;
-    localparam int TUSER_WIDTH = udp_rx_payload_if_sink.TUSER_WIDTH;
-    localparam int TKEEP_ENABLE = udp_rx_payload_if_sink.TKEEP_ENABLE;
-    localparam int TKEEP_WIDTH = TDATA_WIDTH / 8;
 
     udp_demux # (
         .M_COUNT(M_COUNT),

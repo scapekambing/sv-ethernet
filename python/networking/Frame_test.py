@@ -43,7 +43,28 @@ def write_single(address, data):
         return True
     else:
         return False
+    
+def read_single(address, data):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #sock.setsockopt(socket.SOL_SOCKET, 25, str("Ethernet 2" + '\0').encode('utf-8'))
+
+    #sock.bind(("192.168.1.2", 1234))
+    #print(f"Socket bound to: {sock.getsockname()}")
+
+    packet = Packet(OP_READ_DATA, address, data)
+
+    print("Created packet, sending")
+    sock.sendto(packet.pack(), (UDP_IP, UDP_PORT))
+
+    print("Sent packet, receiving")
+    received_data = sock.recv(8)
+    packet = Packet.unpack(received_data)
+
+    if packet.opcode == OP_WRITE_OK:
+        return True
+    else:
+        return False
 
 if __name__ == "__main__":
-    success = write_single(8562, 69696969)
+    success = read_single(8562, 69696969)
     print(success)

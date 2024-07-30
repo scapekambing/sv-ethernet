@@ -14,14 +14,14 @@ module udp_arb_mux_wrapper # (
     parameter bit ARB_TYPE_ROUND_ROBIN = 1'b0,
     parameter bit ARB_LSB_HIGH_PRIORITY = 1'b1
 ) (
-    input var logic                     clk,
-    input var logic                     reset,
+    input var logic         clk,
+    input var logic         reset,
 
-    UDP_TX_HEADER_IF.Sink [S_COUNT-1:0] udp_tx_header_if_sink,
-    AXIS_IF.Receiver [S_COUNT-1:0]      udp_tx_payload_if_sink,
+    UDP_TX_HEADER_IF.Sink   udp_tx_header_if_sink [S_COUNT],
+    AXIS_IF.Receiver        udp_tx_payload_if_sink [S_COUNT],
 
-    UDP_TX_HEADER_IF.Source             udp_tx_header_if_source,
-    AXIS_IF.Transmitter                 udp_tx_payload_if_source
+    UDP_TX_HEADER_IF.Source udp_tx_header_if_source,
+    AXIS_IF.Transmitter     udp_tx_payload_if_source,
 );
     generate
         for (genvar i = 0; i < S_COUNT; i++) begin
@@ -57,6 +57,13 @@ module udp_arb_mux_wrapper # (
         end
     endgenerate
 
+    localparam int TDATA_WIDTH = udp_tx_payload_if_source.TDATA_WIDTH > 0 ? udp_tx_payload_if_source.TDATA_WIDTH : 1;
+    localparam int TID_WIDTH = udp_tx_payload_if_source.TID_WIDTH > 0 ? udp_tx_payload_if_source.TID_WIDTH : 1;
+    localparam int TDEST_WIDTH = udp_tx_payload_if_source.TDEST_WIDTH > 0 ? udp_tx_payload_if_source.TDEST_WIDTH : 1;
+    localparam int TUSER_WIDTH = udp_tx_payload_if_source.TUSER_WIDTH > 0 ? udp_tx_payload_if_source.TUSER_WIDTH : 1;
+    localparam int TKEEP_ENABLE = udp_tx_payload_if_source.TKEEP_ENABLE;
+    localparam int TKEEP_WIDTH = TDATA_WIDTH / 8;
+
     var logic [S_COUNT-1:0]            temp_udp_hdr_valid;
     var logic [S_COUNT-1:0]            temp_udp_hdr_ready;
     var logic [S_COUNT*48-1:0]         temp_eth_dest_mac;
@@ -80,14 +87,14 @@ module udp_arb_mux_wrapper # (
     var logic [S_COUNT*16-1:0]         temp_udp_length;
     var logic [S_COUNT*16-1:0]         temp_udp_checksum;
 
-    var logic [S_COUNT*DATA_WIDTH-1:0] temp_udp_payload_axis_tdata;
-    var logic [S_COUNT*KEEP_WIDTH-1:0] temp_udp_payload_axis_tkeep;
-    var logic [S_COUNT-1:0]            temp_udp_payload_axis_tvalid;
-    var logic [S_COUNT-1:0]            temp_udp_payload_axis_tready;
-    var logic [S_COUNT-1:0]            temp_udp_payload_axis_tlast;
-    var logic [S_COUNT*ID_WIDTH-1:0]   temp_udp_payload_axis_tid;
-    var logic [S_COUNT*DEST_WIDTH-1:0] temp_udp_payload_axis_tdest;
-    var logic [S_COUNT*USER_WIDTH-1:0] temp_udp_payload_axis_tuser;
+    var logic [S_COUNT*TDATA_WIDTH-1:0] temp_udp_payload_axis_tdata;
+    var logic [S_COUNT*TKEEP_WIDTH-1:0] temp_udp_payload_axis_tkeep;
+    var logic [S_COUNT-1:0]             temp_udp_payload_axis_tvalid;
+    var logic [S_COUNT-1:0]             temp_udp_payload_axis_tready;
+    var logic [S_COUNT-1:0]             temp_udp_payload_axis_tlast;
+    var logic [S_COUNT*TID_WIDTH-1:0]   temp_udp_payload_axis_tid;
+    var logic [S_COUNT*TDEST_WIDTH-1:0] temp_udp_payload_axis_tdest;
+    var logic [S_COUNT*TUSER_WIDTH-1:0] temp_udp_payload_axis_tuser;
 
     generate
         for (genvar i = 0; i < S_COUNT; i++) begin
@@ -130,13 +137,6 @@ module udp_arb_mux_wrapper # (
             end
         end
     endgenerate
-
-    localparam int TDATA_WIDTH = udp_tx_payload_if_source.TDATA_WIDTH;
-    localparam int TID_WIDTH = udp_tx_payload_if_source.TID_WIDTH;
-    localparam int TDEST_WIDTH = udp_tx_payload_if_source.TDEST_WIDTH;
-    localparam int TUSER_WIDTH = udp_tx_payload_if_source.TUSER_WIDTH;
-    localparam int TKEEP_ENABLE = udp_tx_payload_if_source.TKEEP_ENABLE;
-    localparam int TKEEP_WIDTH = TDATA_WIDTH / 8;
 
     udp_arb_mux # (
         .S_COUNT(S_COUNT),

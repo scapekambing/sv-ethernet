@@ -138,7 +138,7 @@ module udp_axil_bridge # (
 
                 // Discard the packet, not for us.
                 STATE_RX_DISCARD : begin
-                    if (udp_rx_payload_if.tvalid && udp_tx_payload_if.tready && udp_tx_payload_if.tlast) begin
+                    if (udp_rx_payload_if.tvalid && udp_rx_payload_if.tready && udp_rx_payload_if.tlast) begin
                         udp_rx_payload_if.tready <= 1'b0;
                         state <= STATE_RX_HEADER;
                     end
@@ -326,7 +326,19 @@ module udp_axil_bridge # (
                 
             endcase
         end
-    end 
+    end
+
+    ila_0 ila_0_inst (
+        .clk    ( clk ),
+        .probe0 ( state ),
+        .probe1 ( udp_rx_header_if.dest_port ),
+        .probe2 ( {udp_rx_header_if.hdr_valid, udp_rx_header_if.hdr_ready} ),
+        .probe3 ( {udp_tx_header_if.length, udp_tx_payload_if.tvalid, udp_tx_payload_if.tready} ),
+        .probe4 ( {udp_rx_payload_if.tvalid, udp_rx_payload_if.tready} ),
+        .probe5 ( '0 ),
+        .probe6 ( '0 ),
+        .probe7 ( '0 )
+    );
 
 endmodule
 

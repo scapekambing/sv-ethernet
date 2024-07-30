@@ -9,22 +9,22 @@ module top #(
 
     input var logic [3:0]   sw,
     input var logic [3:0]   btn,
-    input var logic         led0_r,
-    input var logic         led0_g,
-    input var logic         led0_b,
-    input var logic         led1_r,
-    input var logic         led1_g,
-    input var logic         led1_b,
-    input var logic         led2_r,
-    input var logic         led2_g,
-    input var logic         led2_b,
-    input var logic         led3_r,
-    input var logic         led3_g,
-    input var logic         led3_b,
-    input var logic         led4,
-    input var logic         led5,
-    input var logic         led6,
-    input var logic         led7,
+    output var logic         led0_r,
+    output var logic         led0_g,
+    output var logic         led0_b,
+    output var logic         led1_r,
+    output var logic         led1_g,
+    output var logic         led1_b,
+    output var logic         led2_r,
+    output var logic         led2_g,
+    output var logic         led2_b,
+    output var logic         led3_r,
+    output var logic         led3_g,
+    output var logic         led3_b,
+    output var logic         led4,
+    output var logic         led5,
+    output var logic         led6,
+    output var logic         led7,
 
     output var logic        phy_ref_clk,
     input var logic         phy_rx_clk,
@@ -39,9 +39,7 @@ module top #(
     output var logic        phy_reset_n,
 
     input var logic         uart_rxd,
-    output var logic        uart_txd,
-
-    input var logic [3:0]   sw
+    output var logic        uart_txd
 );
     var logic clk_ibufg;
 
@@ -240,7 +238,7 @@ module top #(
         .subnet_mask({8'd255, 8'd255, 8'd255, 8'd0}),
         .clear_arp_cache(0),
         
-        .screamer_enable(sw[3]),
+        .screamer_enable(btn[0]),
 
         .udp_payload_selection(sw[1:0])
     );
@@ -254,11 +252,13 @@ module top #(
         .axil_if(axil_if.Slave)
     );
 
-    always_ff @ (posedge clk_int)
+    always_ff @ (posedge clk_int) begin
         led4 <= sw[0];
         led5 <= sw[1];
         led6 <= sw[2];
         led7 <= sw[3];
+        led0_r <= btn[0];
+    end
 
 
 endmodule

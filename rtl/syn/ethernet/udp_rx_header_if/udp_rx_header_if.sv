@@ -7,7 +7,7 @@
  * @brief UDP RX Header (from PHY to logic) Interface Definition
  */
 
- `default_nettype none
+`default_nettype none
 
 interface UDP_RX_HEADER_IF # (
     // No parameters
@@ -126,4 +126,4 @@ interface UDP_RX_HEADER_IF # (
     );
 endinterface
 
- `default_nettype wire
+`default_nettype wire

@@ -191,13 +191,13 @@ module eth_top # (
       .clear_arp_cache(clear_arp_cache)
    );
 
-   UDP_TX_HEADER_IF [1:0] udp_tx_header_if_mux;
-   AXIS_IF [1:0] # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if_mux;
-   UDP_RX_HEADER_IF [1:0] udp_rx_header_if_mux;
-   AXIS_IF [1:0] # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux;
+   UDP_TX_HEADER_IF udp_tx_header_if_mux [3]();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if_mux [3]();
+   UDP_RX_HEADER_IF udp_rx_header_if_mux [3]();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux [3]();
 
    udp_mux_wrapper # (
-      S_COUNT = 3
+      .S_COUNT(3)
    ) udp_mux_inst (
       .clk(clk),
       .reset(reset),
@@ -212,7 +212,7 @@ module eth_top # (
    );
 
    udp_demux_wrapper # (
-      M_COUNT = 3
+      .M_COUNT(3)
    ) udp_demux_inst (
       .clk(clk),
       .reset(reset),

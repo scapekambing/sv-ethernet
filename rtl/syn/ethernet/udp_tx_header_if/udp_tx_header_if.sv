@@ -7,7 +7,7 @@
  * @brief UDP TX Header (from logic to PHY) Interface Definition
  */
 
- `default_nettype none
+`default_nettype none
 
 interface UDP_TX_HEADER_IF # (
     // No parameters
@@ -78,4 +78,4 @@ interface UDP_TX_HEADER_IF # (
      );
 endinterface
 
- `default_nettype wire
+`default_nettype wire
