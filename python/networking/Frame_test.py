@@ -17,11 +17,18 @@ class Packet:
         self.data = data
     
     def pack(self):
-        return struct.pack('!HLL', self.opcode, self.address, self.data)
+        temp_opcode = self.opcode & 0x03
+        temp_address = self.address & 0x3FFFFFFF
+        temp_data = self.data & 0xFFFFFFFF
+        #raw = (temp_opcode << 62) | (temp_address << 32) | temp_data
+        return struct.pack('!Q', (temp_opcode << 62) | (temp_address << 32) | temp_data)
     
-    def unpack(cls, packed_data):
-        opcode, address, data = struct.unpack('!HLL', packed_data)
-        return cls(opcode, address, data)
+    def unpack(packed_data):
+        raw = struct.unpack('!Q', packed_data)[0]
+        opcode = (raw & 0xC000000000000000) >> 62
+        address = (raw & 0x3FFFFFFF00000000) >> 32
+        data = (raw & 0x00000000FFFFFFFF)
+        return opcode, address, data
 
 def write_single(address, data):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -37,9 +44,9 @@ def write_single(address, data):
 
     print("Sent packet, receiving")
     received_data = sock.recv(8)
-    packet = Packet.unpack(received_data)
+    opcode, address, data = Packet.unpack(received_data)
 
-    if packet.opcode == OP_WRITE_OK:
+    if opcode == OP_WRITE_OK:
         return True
     else:
         return False
@@ -60,7 +67,9 @@ def read_single(address, data):
     received_data = sock.recv(8)
     packet = Packet.unpack(received_data)
 
-    if packet.opcode == OP_WRITE_OK:
+    opcode, address, data = Packet.unpack(received_data)
+
+    if opcode == OP_READ_OK:
         return True
     else:
         return False

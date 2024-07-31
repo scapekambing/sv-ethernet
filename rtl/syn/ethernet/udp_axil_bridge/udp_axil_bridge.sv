@@ -114,6 +114,10 @@ module udp_axil_bridge # (
                 STATE_RX_HEADER : begin
                     udp_rx_header_if.hdr_ready <= 1'b1;
 
+                    udp_tx_payload_if.tvalid <= 1'b0;
+                    udp_tx_payload_if.tlast <= 1'b0;
+                    udp_tx_payload_if.tdata <= 8'b0;
+
                     if (udp_rx_header_if.hdr_valid && udp_rx_header_if.hdr_ready) begin
                         udp_rx_header_if.hdr_ready <= 1'b0;
 
@@ -123,11 +127,11 @@ module udp_axil_bridge # (
                         dest_port <= udp_rx_header_if.dest_port;
                         frame_length <= udp_rx_header_if.length;
                         
-                        // TODO: Check if length % 64 == 0
+                        // TODO: Check if length % 64 == 0 works
                         if (udp_rx_header_if.dest_port == UDP_PORT) begin
                             udp_rx_payload_if.tready <= 1'b1;
                             request_id <= '0;
-                            byte_id <= '0;
+                            byte_id <= 7;
                             state <= STATE_RX_PAYLOAD;
                         end else begin
                             udp_rx_payload_if.tready <= 1'b1;
@@ -150,20 +154,22 @@ module udp_axil_bridge # (
                         // TODO: Check endianness if running into issues
                         requests[request_id].bytes[byte_id] <= udp_rx_payload_if.tdata;
                         
-                        if (byte_id == 7) begin
-                            byte_id <= '0;
+                        if (byte_id == 0) begin
+                            byte_id <= 7;
                             request_id <= request_id + 1;
                         end else begin
-                            byte_id <= byte_id + 1;
+                            byte_id <= byte_id - 1;
                         end
                         
                         if (udp_rx_payload_if.tlast) begin
                             if (udp_rx_payload_if.tuser) begin
                                 // tuser indicates bad frame, ignore
+                                udp_rx_payload_if.tready <= 1'b0;
                                 state <= STATE_RX_HEADER;
                             end else begin
                                 request_count <= request_id;
                                 request_id <= '0;
+                                udp_rx_payload_if.tready <= 1'b0;
                                 state <= STATE_PROCESS_REQUEST;
                             end
                         end
@@ -219,6 +225,20 @@ module udp_axil_bridge # (
 
                         if (request_id == request_count) begin
                             request_id <= '0;
+                            
+                            udp_tx_header_if.hdr_valid <= 1'b1;
+                            udp_tx_header_if.ip_dscp <= '0;
+                            udp_tx_header_if.ip_ecn <= '0;
+                            udp_tx_header_if.ip_ttl <= 64;
+                            udp_tx_header_if.ip_source_ip <= dest_ip;
+                            udp_tx_header_if.ip_dest_ip <= source_ip;
+                            udp_tx_header_if.source_port <= dest_port;
+                            udp_tx_header_if.dest_port <= source_port;
+                            udp_tx_header_if.length <= frame_length;
+                            udp_tx_header_if.checksum <= '0;
+
+                            byte_id <= 7;
+
                             state <= STATE_TX_HEADER;
                         end else begin
                             request_id <= request_id + 1;
@@ -261,8 +281,6 @@ module udp_axil_bridge # (
                             requests[request_id].request.opcode <= WRITE_OK;
                         end
                         if (request_id == request_count) begin
-                            request_id <= '0;
-                            
                             udp_tx_header_if.hdr_valid <= 1'b1;
                             udp_tx_header_if.ip_dscp <= '0;
                             udp_tx_header_if.ip_ecn <= '0;
@@ -274,7 +292,7 @@ module udp_axil_bridge # (
                             udp_tx_header_if.length <= frame_length;
                             udp_tx_header_if.checksum <= '0;
 
-                            byte_id <= '0;
+                            byte_id <= 7;
                             request_id <= '0;
 
                             state <= STATE_TX_HEADER;
@@ -294,7 +312,7 @@ module udp_axil_bridge # (
                         udp_tx_payload_if.tdata <= requests[request_id].bytes[byte_id];
                         udp_tx_payload_if.tlast <= '0;
                         udp_tx_payload_if.tuser <= '0;
-                        byte_id <= byte_id + 1;
+                        byte_id <= byte_id - 1;
 
                         state <= STATE_TX_DATA;
                     end
@@ -305,20 +323,21 @@ module udp_axil_bridge # (
                     if (udp_tx_payload_if.tready && udp_tx_payload_if.tvalid) begin
                         udp_tx_payload_if.tdata <= requests[request_id].bytes[byte_id];
 
-                        if (byte_id == 7) begin
-                            byte_id <= '0;
+                        if (byte_id == 0) begin
+                            byte_id <= 7;
                             request_id <= request_id + 1;
                         end else begin
-                            byte_id <= byte_id + 1;
+                            byte_id <= byte_id - 1;
                         end
 
                         if (request_id == request_count) begin
-                            if (byte_id == 7) begin
+                            //if (byte_id == 1) begin
+                            //end
+                            if (byte_id == 0) begin
+                                state <= STATE_RX_HEADER;
+                                
                                 udp_tx_payload_if.tlast <= 1'b1;
                                 udp_tx_payload_if.tuser <= 1'b0;
-                            end
-                            if (byte_id == 8) begin
-                                state <= STATE_RX_HEADER;
                             end
                         end
                     end
@@ -331,15 +350,31 @@ module udp_axil_bridge # (
     ila_0 ila_0_inst (
         .clk    ( clk ),
         .probe0 ( state ),
-        .probe1 ( udp_rx_header_if.dest_port ),
-        .probe2 ( {udp_rx_header_if.hdr_valid, udp_rx_header_if.hdr_ready} ),
-        .probe3 ( {udp_tx_header_if.length, udp_tx_payload_if.tvalid, udp_tx_payload_if.tready} ),
-        .probe4 ( {udp_rx_payload_if.tvalid, udp_rx_payload_if.tready} ),
-        .probe5 ( '0 ),
-        .probe6 ( '0 ),
-        .probe7 ( '0 )
+        .probe1 ( {udp_rx_header_if.dest_port, udp_tx_header_if.source_port} ),
+        .probe2 ( {udp_rx_header_if.length, udp_rx_header_if.hdr_valid, udp_rx_header_if.hdr_ready} ),
+        .probe3 ( {udp_tx_header_if.length, udp_tx_header_if.hdr_valid, udp_tx_header_if.hdr_ready} ),
+        .probe4 ( {udp_rx_payload_if.tvalid, udp_rx_payload_if.tready, udp_rx_payload_if.tlast} ),
+        .probe5 ( {udp_tx_payload_if.tvalid, udp_tx_payload_if.tready, udp_tx_payload_if.tlast} ),
+        .probe6 ( {request_count, request_id} ),
+        .probe7 ( byte_id )
     );
 
 endmodule
 
 `default_nettype wire
+
+/*
+
+state
+tx hdr valid
+tx hdr ready
+rx hdr valid
+rx hdr ready
+rx payload valid
+rx payload ready
+tx payload valid
+tx payload ready
+rx hdr length
+tx hdr length
+
+*/
