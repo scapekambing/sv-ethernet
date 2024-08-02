@@ -1,15 +1,15 @@
 /**
- * @file udp_output_header_if.sv
+ * @file udp_rx_header_if.sv
  *
  * @author Mani Magnusson
  * @date   2024
  *
- * @brief UDP Output Header (from Ethernet to FPGA) Interface Definition
+ * @brief UDP RX Header (from PHY to logic) Interface Definition
  */
 
- `default_nettype none
+`default_nettype none
 
-interface UDP_OUTPUT_HEADER_IF # (
+interface UDP_RX_HEADER_IF # (
     // No parameters
 );
     var logic           hdr_valid;
@@ -38,37 +38,8 @@ interface UDP_OUTPUT_HEADER_IF # (
     var logic [15:0]    length;
     var logic [15:0]    checksum;
 
-    // FPGA side port
-    modport Input (
-        input hdr_valid,
-        output hdr_ready,
-
-        input eth_dest_mac,
-        input eth_src_mac,
-        input eth_type,
-
-        input ip_version,
-        input ip_ihl,
-        input ip_dscp,
-        input ip_ecn,
-        input ip_length,
-        input ip_identification,
-        input ip_flags,
-        input ip_fragment_offset,
-        input ip_ttl,
-        input ip_protocol,
-        input ip_header_checksum,
-        input ip_source_ip,
-        input ip_dest_ip,
-
-        input source_port,
-        input dest_port,
-        input length,
-        input checksum
-    );
-
-    // Ethernet side port
-    modport Output (
+    // PHY side port
+    modport Source (
         output hdr_valid,
         input hdr_ready,
 
@@ -94,6 +65,35 @@ interface UDP_OUTPUT_HEADER_IF # (
         output dest_port,
         output length,
         output checksum
+    );
+
+    // Logic side port
+    modport Sink (
+        input hdr_valid,
+        output hdr_ready,
+
+        input eth_dest_mac,
+        input eth_src_mac,
+        input eth_type,
+
+        input ip_version,
+        input ip_ihl,
+        input ip_dscp,
+        input ip_ecn,
+        input ip_length,
+        input ip_identification,
+        input ip_flags,
+        input ip_fragment_offset,
+        input ip_ttl,
+        input ip_protocol,
+        input ip_header_checksum,
+        input ip_source_ip,
+        input ip_dest_ip,
+
+        input source_port,
+        input dest_port,
+        input length,
+        input checksum
     );
 
     // Monitor side port
@@ -126,4 +126,4 @@ interface UDP_OUTPUT_HEADER_IF # (
     );
 endinterface
 
- `default_nettype wire
+`default_nettype wire

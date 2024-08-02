@@ -10,12 +10,12 @@
 `default_nettype none
 
 interface AXIS_IF # (
-  parameter int TDATA_WIDTH     = 8,
-  parameter int TID_WIDTH       = 0,
-  parameter int TDEST_WIDTH     = 0,
-  parameter int TUSER_WIDTH     = 0,
-  parameter bit TKEEP_ENABLE    = '1,
-  parameter bit TWAKEUP_ENABLE  = '0
+    parameter int TDATA_WIDTH     = 8,
+    parameter int TID_WIDTH       = 0,
+    parameter int TDEST_WIDTH     = 0,
+    parameter int TUSER_WIDTH     = 0,
+    parameter bit TKEEP_ENABLE    = '1,
+    parameter bit TWAKEUP_ENABLE  = '0
 );
     localparam int TSTRB_WIDTH = TDATA_WIDTH / 8;
     localparam int TKEEP_WIDTH = TDATA_WIDTH / 8;

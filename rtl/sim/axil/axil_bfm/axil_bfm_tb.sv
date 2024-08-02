@@ -9,6 +9,7 @@
 
  /* TODO:
  *  - Add tests with variable response and protection fields
+ *  - ADD PARAMETERIZATION, see axil_ram_wrapper_tb
 */
 
 `timescale 1ns / 1ps

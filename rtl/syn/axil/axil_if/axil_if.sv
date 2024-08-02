@@ -7,27 +7,25 @@
  * @brief AXI4-Lite Interface Definition, uses a 32 bit bus
  */
 
- /* 
- * TODO:
- *  - Add parameterization
-*/
-
 `default_nettype none
 
-interface AXIL_IF # ();
-    // Signals
+interface AXIL_IF # (
+    parameter int ADDR_WIDTH  = 32,
+    parameter int DATA_WIDTH   = 32
+);
+    localparam int STRB_WIDTH = DATA_WIDTH / 8;
     
     // Write address channel
     var logic        awvalid; // Single bit
     var logic        awready; // Single bit
-    var logic [31:0] awaddr;  // 32 bit addresses
+    var logic [(ADDR_WIDTH > 0 ? ADDR_WIDTH : 1)-1:0] awaddr;
     var logic  [2:0] awprot;  // 3 bit access protection
 
     // Write data channel
     var logic        wvalid; // Single bit
     var logic        wready; // Single bit
-    var logic [31:0] wdata; // 32 bit data bus
-    var logic  [3:0] wstrb; // 32/8 bit strobe bus
+    var logic [(DATA_WIDTH > 0 ? DATA_WIDTH : 1)-1:0] wdata;
+    var logic  [(STRB_WIDTH > 0 ? STRB_WIDTH : 1)-1:0] wstrb;
 
     // Write response channel
     var logic        bvalid; // Single bit
@@ -37,13 +35,13 @@ interface AXIL_IF # ();
     // Read address channel signals
     var logic        arvalid; // Single bit
     var logic        arready; // Single bit
-    var logic [31:0] araddr;  // 31 bit addresses
+    var logic [(ADDR_WIDTH > 0 ? ADDR_WIDTH : 1)-1:0] araddr;
     var logic [2:0]  arprot;  // 3 bit access protection
 
     // Read data channel
     var logic        rvalid; // Single bit
     var logic        rready; // Single bit
-    var logic [31:0] rdata; // 32 bit data bus
+    var logic [(DATA_WIDTH > 0 ? DATA_WIDTH : 1)-1:0] rdata;
     var logic  [1:0] rresp; // Response lines
     
     enum logic [1:0] {

@@ -1,15 +1,15 @@
 /**
- * @file udp_input_header_if.sv
+ * @file udp_tx_header_if.sv
  *
  * @author Mani Magnusson
  * @date   2024
  *
- * @brief UDP Input Header (from FPGA to Ethernet) Interface Definition
+ * @brief UDP TX Header (from logic to PHY) Interface Definition
  */
 
- `default_nettype none
+`default_nettype none
 
-interface UDP_INPUT_HEADER_IF # (
+interface UDP_TX_HEADER_IF # (
     // No parameters
 );
      var logic          hdr_valid;
@@ -26,25 +26,8 @@ interface UDP_INPUT_HEADER_IF # (
      var logic [15:0]   length;
      var logic [15:0]   checksum;
 
-     // Ethernet side port
-     modport Input (
-        input hdr_valid,
-        output hdr_ready,
-
-        input ip_dscp,
-        input ip_ecn,
-        input ip_ttl,
-        input ip_source_ip,
-        input ip_dest_ip,
-
-        input source_port,
-        input dest_port,
-        input length,
-        input checksum
-     );
-
-     // FPGA side port
-     modport Output (
+     // Logic side port
+     modport Source (
         output hdr_valid,
         input hdr_ready,
 
@@ -58,6 +41,23 @@ interface UDP_INPUT_HEADER_IF # (
         output dest_port,
         output length,
         output checksum
+     );
+
+     // PHY side port
+     modport Sink (
+        input hdr_valid,
+        output hdr_ready,
+
+        input ip_dscp,
+        input ip_ecn,
+        input ip_ttl,
+        input ip_source_ip,
+        input ip_dest_ip,
+
+        input source_port,
+        input dest_port,
+        input length,
+        input checksum
      );
 
      // Monitor side port
@@ -78,4 +78,4 @@ interface UDP_INPUT_HEADER_IF # (
      );
 endinterface
 
- `default_nettype wire
+`default_nettype wire
