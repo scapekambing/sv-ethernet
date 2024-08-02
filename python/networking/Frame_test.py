@@ -1,6 +1,7 @@
 from scapy.all import *
 import struct
 import socket
+from random import randrange
 
 OP_WRITE_DATA = 0
 OP_READ_DATA = 1
@@ -32,17 +33,11 @@ class Packet:
 
 def write_single(address, data):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #sock.setsockopt(socket.SOL_SOCKET, 25, str("Ethernet 2" + '\0').encode('utf-8'))
-
-    #sock.bind(("192.168.1.2", 1234))
-    #print(f"Socket bound to: {sock.getsockname()}")
 
     packet = Packet(OP_WRITE_DATA, address, data)
 
-    print("Created packet, sending")
     sock.sendto(packet.pack(), (UDP_IP, UDP_PORT))
 
-    print("Sent packet, receiving")
     received_data = sock.recv(8)
     opcode, address, data = Packet.unpack(received_data)
 
@@ -51,29 +46,30 @@ def write_single(address, data):
     else:
         return False
     
-def read_single(address, data):
+def read_single(address):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #sock.setsockopt(socket.SOL_SOCKET, 25, str("Ethernet 2" + '\0').encode('utf-8'))
 
-    #sock.bind(("192.168.1.2", 1234))
-    #print(f"Socket bound to: {sock.getsockname()}")
+    packet = Packet(OP_READ_DATA, address, 0)
 
-    packet = Packet(OP_READ_DATA, address, data)
-
-    print("Created packet, sending")
     sock.sendto(packet.pack(), (UDP_IP, UDP_PORT))
 
-    print("Sent packet, receiving")
     received_data = sock.recv(8)
     packet = Packet.unpack(received_data)
 
     opcode, address, data = Packet.unpack(received_data)
 
     if opcode == OP_READ_OK:
-        return True
+        return True, data
     else:
-        return False
+        return False, -1
 
 if __name__ == "__main__":
-    success = read_single(8562, 69696969)
-    print(success)
+    for i in range(100000):
+        address = randrange(0, 65535)
+        data = randrange(0, 4294967295)
+        write_success = write_single(address, data)
+        read_success, data_out = read_single(address)
+        test = write_success and read_success and int(data_out) == data
+        if (not test):
+            print(f'Failed write-read with address {address} and data {data}, received {data_out} at index {i}!')
+            break

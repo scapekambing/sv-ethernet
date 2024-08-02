@@ -75,8 +75,8 @@ module udp_axil_bridge # (
         STATE_PROCESS_REQUEST,
         STATE_AXIL_READ_ADDRESS,
         STATE_AXIL_READ_DATA,
-        STATE_AXIL_WRITE_ADDRESS,
-        STATE_AXIL_WRITE_DATA,
+        STATE_AXIL_WRITE,
+        STATE_AXIL_AW_W_TRANSFERS_DONE,
         STATE_AXIL_WRITE_RESPONSE,
         STATE_TX_HEADER,
         STATE_TX_DATA
@@ -180,10 +180,24 @@ module udp_axil_bridge # (
                 STATE_PROCESS_REQUEST : begin
                     case (requests[request_id].request.opcode)
                         WRITE_DATA : begin
-                            state <= STATE_AXIL_WRITE_ADDRESS;
+                            axil_if.awprot <= axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA;
+                            // Pad the msb with zeros
+                            axil_if.awaddr <= {2'b0, requests[request_id].request.address};
+                            axil_if.awvalid <= 1'b1;
+
+                            axil_if.wstrb <= '1;
+                            axil_if.wdata <= requests[request_id].request.data;
+                            axil_if.wvalid <= 1'b1;
+
+                            state <= STATE_AXIL_WRITE;
                         end
 
                         READ_DATA : begin
+                            axil_if.arprot <= axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA;
+                            // Pad the msb with zeros
+                            axil_if.araddr <= {2'b0, requests[request_id].request.address};
+                            axil_if.arvalid <= 1'b1;
+
                             state <= STATE_AXIL_READ_ADDRESS;
                         end
 
@@ -202,11 +216,6 @@ module udp_axil_bridge # (
 
                 // AXI-Lite transfer
                 STATE_AXIL_READ_ADDRESS : begin
-                    axil_if.arvalid <= 1'b1;
-                    axil_if.arprot <= axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA;
-                    // Pad the msb with zeros
-                    axil_if.araddr <= {2'b0, requests[request_id].request.address};
-
                     if (axil_if.arready && axil_if.arvalid) begin
                         axil_if.arvalid <= 1'b0;
                         axil_if.rready <= 1'b1;
@@ -246,28 +255,17 @@ module udp_axil_bridge # (
                         end
                     end
                 end
-                
-                // AXI-Lite transfer
-                STATE_AXIL_WRITE_ADDRESS : begin
-                    axil_if.awvalid <= 1'b1;
-                    axil_if.awprot <= axil_if.AXI_PROT_UNPRIVILEGED_NONSECURE_DATA;
-                    // Pad the msb with zeros
-                    axil_if.awaddr <= {2'b0, requests[request_id].request.address};
 
+                STATE_AXIL_WRITE: begin
                     if (axil_if.awready && axil_if.awvalid) begin
                         axil_if.awvalid <= 1'b0;
-                        state <= STATE_AXIL_WRITE_DATA;
                     end
-                end
-                
-                // AXI-Lite transfer
-                STATE_AXIL_WRITE_DATA : begin
-                    axil_if.wvalid <= 1'b1;
-                    axil_if.wstrb <= '1;
-                    axil_if.wdata <= requests[request_id].request.data;
 
                     if (axil_if.wready && axil_if.wvalid) begin
                         axil_if.wvalid <= 1'b0;
+                    end
+
+                    if (!axil_if.awvalid && !axil_if.wvalid) begin
                         axil_if.bready <= 1'b1;
                         state <= STATE_AXIL_WRITE_RESPONSE;
                     end
@@ -331,13 +329,13 @@ module udp_axil_bridge # (
                         end
 
                         if (request_id == request_count) begin
-                            //if (byte_id == 1) begin
+                            //if (byte_id == 1) begin  
                             //end
                             if (byte_id == 0) begin
-                                state <= STATE_RX_HEADER;
-                                
                                 udp_tx_payload_if.tlast <= 1'b1;
                                 udp_tx_payload_if.tuser <= 1'b0;
+
+                                state <= STATE_RX_HEADER;
                             end
                         end
                     end
@@ -354,8 +352,8 @@ module udp_axil_bridge # (
         .probe2 ( {udp_rx_header_if.length, udp_rx_header_if.hdr_valid, udp_rx_header_if.hdr_ready} ),
         .probe3 ( {udp_tx_header_if.length, udp_tx_header_if.hdr_valid, udp_tx_header_if.hdr_ready} ),
         .probe4 ( {udp_rx_payload_if.tvalid, udp_rx_payload_if.tready, udp_rx_payload_if.tlast} ),
-        .probe5 ( {udp_tx_payload_if.tvalid, udp_tx_payload_if.tready, udp_tx_payload_if.tlast} ),
-        .probe6 ( {request_count, request_id} ),
+        .probe5 ( {udp_tx_payload_if.tvalid, udp_tx_payload_if.tready, udp_tx_payload_if.tlast, udp_tx_payload_if.tdata} ),
+        .probe6 ( {axil_if.awvalid, axil_if.awready} ),
         .probe7 ( byte_id )
     );
 
