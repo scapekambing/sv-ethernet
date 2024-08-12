@@ -128,75 +128,6 @@ module top #(
         .O(clk_25mhz_int)
     );
 
-    var logic phy_rx_clk_mmcm_locked;
-    var logic phy_rx_clk_mmcm_clkfb;
-
-    var logic phy_rx_clk_mmcm_out;
-    var logic phy_rx_clk_int;
-    
-    /* MMCM Instance
-     * 25 MHz input, 25 MHz output
-     * PFD range: 10 MHz to 550 MHz
-     * VCO range: 600 MHz to 1200 MHz
-     * M = 30, D = 1 set Fvco = 750 MHz (in range)
-     * Divide by 30 to get 25 MHz
-    */
-    MMCME2_BASE # (
-        .BANDWIDTH("OPTIMIZED"),
-        .CLKOUT0_DIVIDE_F(30),
-        .CLKOUT0_DUTY_CYCLE(0.5),
-        .CLKOUT0_PHASE(0),
-        .CLKOUT1_DIVIDE(1),
-        .CLKOUT1_DUTY_CYCLE(0.5),
-        .CLKOUT1_PHASE(0),
-        .CLKOUT2_DIVIDE(1),
-        .CLKOUT2_DUTY_CYCLE(0.5),
-        .CLKOUT2_PHASE(0),
-        .CLKOUT3_DIVIDE(1),
-        .CLKOUT3_DUTY_CYCLE(0.5),
-        .CLKOUT3_PHASE(0),
-        .CLKOUT4_DIVIDE(1),
-        .CLKOUT4_DUTY_CYCLE(0.5),
-        .CLKOUT4_PHASE(0),
-        .CLKOUT5_DIVIDE(1),
-        .CLKOUT5_DUTY_CYCLE(0.5),
-        .CLKOUT5_PHASE(0),
-        .CLKOUT6_DIVIDE(1),
-        .CLKOUT6_DUTY_CYCLE(0.5),
-        .CLKOUT6_PHASE(0),
-        .CLKFBOUT_MULT_F(30),
-        .CLKFBOUT_PHASE(0),
-        .DIVCLK_DIVIDE(1),
-        .REF_JITTER1(0.010),
-        .CLKIN1_PERIOD(40.0),
-        .STARTUP_WAIT("FALSE"),
-        .CLKOUT4_CASCADE("FALSE")
-    ) phy_rx_clk_mmcm_inst (
-        .CLKIN1(phy_rx_clk),
-        .CLKFBIN(phy_rx_clk_mmcm_clkfb),
-        .RST(mmcm_rst),
-        .PWRDWN('0),
-        .CLKOUT0(phy_rx_clk_int), //phy_rx_clk_mmcm_out
-        .CLKOUT0B(),
-        .CLKOUT1(),
-        .CLKOUT1B(),
-        .CLKOUT2(),
-        .CLKOUT2B(),
-        .CLKOUT3(),
-        .CLKOUT3B(),
-        .CLKOUT4(),
-        .CLKOUT5(),
-        .CLKOUT6(),
-        .CLKFBOUT(phy_rx_clk_mmcm_clkfb),
-        .CLKFBOUTB(),
-        .LOCKED(phy_rx_clk_mmcm_locked)
-    );
-
-    //BUFG phy_rx_clk_bufg_inst (
-    //    .I(phy_rx_clk_mmcm_out),
-    //    .O(phy_rx_clk_int)
-    //);
-
     // Sync reset originates from the verilog-axis library in the ethernet library
     sync_reset # (
         .N(4)
@@ -213,7 +144,7 @@ module top #(
     assign mii_if.tx_clk = phy_tx_clk;
     assign phy_txd = mii_if.txd;
     assign phy_tx_en = mii_if.tx_en;
-    assign mii_if.rx_clk = phy_rx_clk_int;
+    assign mii_if.rx_clk = phy_rx_clk;
     assign mii_if.rxd = phy_rxd;
     assign mii_if.rx_dv = phy_rx_dv;
     assign mii_if.rx_er = phy_rx_er;
