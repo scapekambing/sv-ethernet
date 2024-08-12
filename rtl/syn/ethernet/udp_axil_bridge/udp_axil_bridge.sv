@@ -345,6 +345,7 @@ module udp_axil_bridge # (
         end
     end
 
+    /*
     ila_0 ila_0_inst (
         .clk    ( clk ),
         .probe0 ( state ),
@@ -356,23 +357,8 @@ module udp_axil_bridge # (
         .probe6 ( {axil_if.awvalid, axil_if.awready} ),
         .probe7 ( byte_id )
     );
+    */
 
 endmodule
 
 `default_nettype wire
-
-/*
-
-state
-tx hdr valid
-tx hdr ready
-rx hdr valid
-rx hdr ready
-rx payload valid
-rx payload ready
-tx payload valid
-tx payload ready
-rx hdr length
-tx hdr length
-
-*/
