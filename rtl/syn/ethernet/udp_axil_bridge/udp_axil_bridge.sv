@@ -8,7 +8,8 @@
 */
 
 /* TODO:
- *  - Make address write and data write channels happen in parallel
+ *  - Improve write performance by adding more states and waste fewer clock cycles
+ *  - Check if using BRAM to store requests results in reduced logic utilization
 */
 
 `default_nettype none

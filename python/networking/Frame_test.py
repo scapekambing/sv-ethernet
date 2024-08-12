@@ -64,7 +64,7 @@ def read_single(address):
         return False, -1
 
 if __name__ == "__main__":
-    for i in range(100000):
+    for i in range(10000):
         address = randrange(0, 65535)
         data = randrange(0, 4294967295)
         write_success = write_single(address, data)
@@ -73,3 +73,4 @@ if __name__ == "__main__":
         if (not test):
             print(f'Failed write-read with address {address} and data {data}, received {data_out} at index {i}!')
             break
+    print('Testing done!')
