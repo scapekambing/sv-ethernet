@@ -125,10 +125,10 @@ axis_async_fifo # (
     .MARK_WHEN_FULL(MARK_WHEN_FULL),
     .PAUSE_ENABLE(PAUSE_ENABLE),
     .FRAME_PAUSE(FRAME_PAUSE)
-) axis_fifo_inst (
+) axis_async_fifo_inst (
     .m_clk(tx_clk),
     .s_clk(rx_clk),
-    
+
     .m_rst(tx_reset),
     .s_rst(rx_reset),
 
