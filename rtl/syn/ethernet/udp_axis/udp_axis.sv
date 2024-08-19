@@ -7,12 +7,6 @@
  * @brief UDP to AXI-Stream (receiver) with packet ID
 */
 
-/* TODO:
- *  - Add checks to see if params of the AXIS IFs are correct
- *  - Add axis-adapter wrapper
- *  - Add axis-fifo with ready controlled by fifo_ready & (level < half)
- */
-
 `default_nettype none
 
 module udp_axis # (
@@ -28,7 +22,7 @@ module udp_axis # (
     UDP_RX_HEADER_IF.Sink udp_rx_header_if,
     AXIS_IF.Receiver udp_rx_payload_if,
 
-    AXIS_IF.Transmitter axis_if
+    AXIS_IF.Transmitter out_axis_if
 );
     localparam int TRANSFER_ID_WIDTH = 48;
 
@@ -243,5 +237,12 @@ module udp_axis # (
             endcase
         end
     end
+
+    axis_adapter_wrapper axis_adapter_wrapper_inst (
+        .clk(clk),
+        .reset(reset),
+        .in_axis_if(axis_mux_to_adapter_if),
+        .out_axis_if(out_axis_if)
+    );
 
 endmodule
