@@ -1,15 +1,15 @@
 /**
- * @file axis_fifo_wrapper.sv
+ * @file axis_fifo_adapter_wrapper.sv
  * 
  * @author Mani Magnusson
  * @date   2024
  * 
- * @brief Wrapper for axis_fifo.v from Alex Forencich
+ * @brief Wrapper for axis_fifo_adapter.v from Alex Forencich
  */
 
 `default_nettype none
 
-module axis_fifo_wrapper # (
+module axis_fifo_adapter_wrapper # (
     parameter int DEPTH                 = 4096,
     parameter int RAM_PIPELINE          = 1,
     parameter bit OUTPUT_FIFO_ENABLE    = 1'b0,
@@ -85,7 +85,7 @@ module axis_fifo_wrapper # (
         out_axis_if.twakeup = 1'b0;
     end
 
-    axis_adapter_fifo # (
+    axis_fifo_adapter # (
         .DEPTH(DEPTH),
         .S_DATA_WIDTH(IN_DATA_WIDTH),
         .S_KEEP_ENABLE(IN_KEEP_ENABLE),
@@ -110,7 +110,7 @@ module axis_fifo_wrapper # (
         .MARK_WHEN_FULL(MARK_WHEN_FULL),
         .PAUSE_ENABLE(PAUSE_ENABLE),
         .FRAME_PAUSE(FRAME_PAUSE)
-    ) axis_adapter_fifo_inst (
+    ) axis_fifo_adapter_inst (
         .clk(clk),
         .rst(reset),
 
