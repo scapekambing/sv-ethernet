@@ -110,18 +110,28 @@ module udp_axis_master_tb ();
         end
 
         `TEST_CASE("single_transfer") begin
-            static logic [47:0] transfer_id = 48'h05DE9A01C211;
+            static logic [47:0] transfer_id_in = 48'h05DE9A01C211;
+            static logic [47:0] transfer_id_out;
             static logic [AXIS_OUT_TDATA_WIDTH-1:0] random_data_in;
             static logic [AXIS_OUT_TDATA_WIDTH-1:0] random_data_out;
+            logic [5:0] ip_dscp;
+            logic [1:0] ip_ecn;
+            logic [7:0] ip_ttl;
+            logic [31:0] ip_source_ip;
+            logic [31:0] ip_dest_ip;
+            logic [15:0] source_port;
+            logic [15:0] dest_port;
+            logic [15:0] length;
+            logic [15:0] checksum;
 
             udp_rx_header_bfm.simple_transfer(clk, UDP_SOURCE_PORT, UDP_DEST_PORT, 12, 0);
             
-            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[7:0]));
-            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[15:8]));
-            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[23:16]));
-            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[31:24]));
-            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[39:32]));
-            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[47:40]));
+            udp_rx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_in[7:0]));
+            udp_rx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_in[15:8]));
+            udp_rx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_in[23:16]));
+            udp_rx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_in[31:24]));
+            udp_rx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_in[39:32]));
+            udp_rx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_in[47:40]));
 
             random_data_in = $urandom();
 
@@ -136,6 +146,32 @@ module udp_axis_master_tb ();
                 axis_out_bfm.simple_transfer(clk, random_data_out);
                 `CHECK_EQUAL(random_data_in, random_data_out);
             end
+
+
+            udp_tx_header_bfm.transfer(
+                clk,
+                ip_dscp,
+                ip_ecn,
+                ip_ttl,
+                ip_source_ip,
+                ip_dest_ip,
+                source_port,
+                dest_port,
+                length,
+                checksum
+            );
+
+            `CHECK_EQUAL(source_port, UDP_DEST_PORT);
+            `CHECK_EQUAL(dest_port, UDP_SOURCE_PORT);
+
+            udp_tx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_out[7:0]));
+            udp_tx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_out[15:8]));
+            udp_tx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_out[23:16]));
+            udp_tx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_out[31:24]));
+            udp_tx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_out[39:32]));
+            udp_tx_payload_bfm.simple_transfer(.clk(clk), .data(transfer_id_out[47:40]));
+
+            `CHECK_EQUAL(transfer_id_out, transfer_id_in);
         end
     end
 

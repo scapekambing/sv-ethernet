@@ -218,7 +218,7 @@ module udp_axis_master # (
                 STATE_TX_ID : begin
                     if (udp_tx_payload_if.tvalid && udp_tx_payload_if.tready) begin
                         udp_tx_payload_if.tdata <= transfer_id[((8 * (id_byte_index + 1)) - 1) -: 8];
-                        udp_tx_payload_if.tlast <= id_byte_index == 3;
+                        udp_tx_payload_if.tlast <= id_byte_index == 5;
 
                         id_byte_index <= id_byte_index + 1;
 
