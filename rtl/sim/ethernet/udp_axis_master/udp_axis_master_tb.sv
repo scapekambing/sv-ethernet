@@ -1,15 +1,11 @@
 /**
- * @file udp_axis_master.sv
+ * @file udp_axis_master_tb.sv
  *
  * @author Mani Magnusson
  * @date   2024
  *
- * @brief UDP to AXI-Stream master with packet ID
+ * @brief UDP to AXI-Stream master with packet ID testbench
 */
-
-/* TODO:
- *
- */
 
 `timescale 1ns / 1ps
 `default_nettype none

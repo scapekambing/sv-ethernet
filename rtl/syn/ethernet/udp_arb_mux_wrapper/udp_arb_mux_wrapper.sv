@@ -21,7 +21,7 @@ module udp_arb_mux_wrapper # (
     AXIS_IF.Receiver        udp_tx_payload_if_sink [S_COUNT],
 
     UDP_TX_HEADER_IF.Source udp_tx_header_if_source,
-    AXIS_IF.Transmitter     udp_tx_payload_if_source,
+    AXIS_IF.Transmitter     udp_tx_payload_if_source
 );
     generate
         for (genvar i = 0; i < S_COUNT; i++) begin
