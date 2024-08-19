@@ -1,15 +1,15 @@
 /**
- * @file udp_axis.sv
+ * @file udp_axis_master.sv
  *
  * @author Mani Magnusson
  * @date   2024
  *
- * @brief UDP to AXI-Stream (receiver) with packet ID
+ * @brief UDP to AXI-Stream master with packet ID
 */
 
 `default_nettype none
 
-module udp_axis # (
+module udp_axis_master # (
     parameter bit [15:0] UDP_PORT = 4321,
     parameter int FIFO_DEPTH = 4096
 ) (
