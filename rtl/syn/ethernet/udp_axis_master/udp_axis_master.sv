@@ -174,7 +174,7 @@ module udp_axis_master # (
                         transfer_id[((8 * (id_byte_index + 1)) - 1) -: 8] <= axis_mux_to_udp_if.tdata;
                         id_byte_index <= id_byte_index + 1;
 
-                        if (id_byte_index == 3) begin
+                        if (id_byte_index == 5) begin
                             axis_mux_to_udp_if.tready <= 1'b0;
                             state <= STATE_RX_DATA;
                         end

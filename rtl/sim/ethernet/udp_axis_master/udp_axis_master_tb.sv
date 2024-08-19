@@ -24,6 +24,12 @@ module udp_axis_master_tb ();
     parameter int UDP_SOURCE_PORT = 8891;
     parameter int UDP_DEST_PORT = 4321;
     parameter int AXIS_OUT_TDATA_WIDTH = 32;
+    parameter int NUM_OUT_TRANSFERS_PER_PACKET = 256;
+
+    initial begin
+        assert (NUM_OUT_TRANSFERS_PER_PACKET * (AXIS_OUT_TDATA_WIDTH / 8) + 28 < 65535)
+        else $error("Assertion in %m failed, packet size too large!");
+    end
 
     logic clk;
     logic reset;
@@ -103,9 +109,37 @@ module udp_axis_master_tb ();
             `CHECK_EQUAL(udp_axis_master_inst.state, udp_axis_master_inst.STATE_RX_HEADER)
         end
 
-        //`TEST_CASE("single_transfer") begin
-        //end
+        `TEST_CASE("single_transfer") begin
+            static logic [47:0] transfer_id = 48'h05DE9A01C211;
+            static logic [AXIS_OUT_TDATA_WIDTH-1:0] random_data_in;
+            static logic [AXIS_OUT_TDATA_WIDTH-1:0] random_data_out;
+
+            udp_rx_header_bfm.simple_transfer(clk, UDP_SOURCE_PORT, UDP_DEST_PORT, 12, 0);
+            
+            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[7:0]));
+            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[15:8]));
+            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[23:16]));
+            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[31:24]));
+            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[39:32]));
+            udp_rx_payload_bfm.transfer(.clk(clk), .data(transfer_id[47:40]));
+
+            random_data_in = $urandom();
+
+            for (int i = 0; i < NUM_OUT_TRANSFERS_PER_PACKET; i++) begin
+                for (int j = 0; j < AXIS_OUT_TDATA_WIDTH / 8; j++) begin
+                    udp_rx_payload_bfm.transfer(
+                        .clk(clk),
+                        .data(random_data_in[((8 * (j + 1)) - 1) -: 8]),
+                        .last(i == NUM_OUT_TRANSFERS_PER_PACKET-1 && j == (AXIS_OUT_TDATA_WIDTH / 8)-1)
+                    );
+                end
+                axis_out_bfm.simple_transfer(clk, random_data_out);
+                `CHECK_EQUAL(random_data_in, random_data_out);
+            end
+        end
     end
+
+    `WATCHDOG(0.1ms);
 endmodule
 
 `default_nettype wire
