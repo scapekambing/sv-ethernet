@@ -73,6 +73,31 @@ class AXIS_Slave_BFM # (
 
         this.axis_if.tready = 1'b0;
     endtask
+
+    task automatic simple_transfer(
+        ref var logic clk,
+        output var logic [data_width-1:0] data
+    );
+        var logic [strobe_width-1:0] strobe;
+        var logic [keep_width-1:0] keep;
+        var logic last;
+        var logic [id_width-1:0] id;
+        var logic [dest_width-1:0] dest;
+        var logic [user_width-1:0] user;
+        var logic wakeup;
+
+        transfer(
+            .clk(clk),
+            .data(data),
+            .strobe(strobe),
+            .keep(keep),
+            .last(last),
+            .id(id),
+            .dest(dest),
+            .user(user),
+            .wakeup(wakeup)
+        );
+    endtask
 endclass
 
 class AXIS_Master_BFM # (
@@ -150,6 +175,31 @@ class AXIS_Master_BFM # (
         this.axis_if.tdest = '0;
         this.axis_if.tuser = '0;
         this.axis_if.twakeup = 1'b0;
+    endtask
+
+    task automatic simple_transfer(
+        ref var logic clk,
+        input var logic [data_width-1:0] data,
+    );
+        var logic [strobe_width-1:0] strobe = ~ '0;
+        var logic [keep_width-1:0] keep = ~ '0;
+        var logic last = '0;
+        var logic [id_width-1:0] id = '0;
+        var logic [dest_width-1:0] dest = '0;
+        var logic [user_width-1:0] user = '0;
+        var logic wakeup = '0;
+
+        transfer(
+            .clk(clk),
+            .data(data),
+            .strobe(strobe),
+            .keep(keep),
+            .last(last),
+            .id(id),
+            .dest(dest),
+            .user(user),
+            .wakeup(wakeup)
+        );
     endtask
 endclass
 endpackage
