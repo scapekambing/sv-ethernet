@@ -1,7 +1,7 @@
 # Insert the location of the project on your disk, this include the name of the project folder
-set projectDir C:/FPGA/SystemVerilog-Ethernet-Wrapped
+# set projectDir C:/FPGA/SystemVerilog-Ethernet-Wrapped
 # Alternate paths:
-# D:/FPGA/Projects/SystemVerilog-Ethernet-Wrapped
+set projectDir D:/FPGA/Projects/SystemVerilog-Ethernet-Wrapped
 # The full part name for use when generating the project
 set fullPartName xc7a100tcsg324-1
 # The part name that appears in the hardware manager to upload the bitstream to the FPGA
@@ -26,7 +26,7 @@ add_files $projectDir/rtl/syn/top.sv
 
 # Change this line if using some other constraint file
 add_files -fileset constrs_1 $projectDir/rtl/constraints/Arty-A7-100-Master.xdc
-import_files -force -norecurse
+add_files -force -norecurse
 set_property top top [current_fileset]
 update_compile_order -fileset sources_1
 

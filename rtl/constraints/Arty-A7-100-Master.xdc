@@ -137,8 +137,6 @@ set_property -dict {LOC C16 IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 12} [get_ports p
 create_clock -period 40.000 -name phy_rx_clk [get_ports phy_rx_clk]
 create_clock -period 40.000 -name phy_tx_clk [get_ports phy_tx_clk]
 
-create_generated_clock -name phy_rx_clk_int [get_nets phy_rx_clk_int]
-
 set_output_delay -clock phy_tx_clk -max 11 [get_ports phy_txd]
 set_output_delay -clock phy_tx_clk -max 11 [get_ports phy_tx_en]
 
