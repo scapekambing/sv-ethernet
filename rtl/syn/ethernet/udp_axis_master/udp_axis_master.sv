@@ -5,13 +5,12 @@
  * @date   2024
  *
  * @brief UDP to AXI-Stream master with packet ID
-*/
+ */
 
 `default_nettype none
 
 module udp_axis_master # (
-    parameter bit [15:0] UDP_PORT = 4321,
-    parameter int FIFO_DEPTH = 4096
+    parameter bit [15:0] UDP_PORT = 4321
 ) (
     input var logic clk,
     input var logic reset,
@@ -24,8 +23,6 @@ module udp_axis_master # (
 
     AXIS_IF.Transmitter out_axis_if
 );
-    localparam int TRANSFER_ID_WIDTH = 48;
-
     typedef enum {
         STATE_RX_HEADER,
         STATE_RX_DISCARD,
@@ -43,8 +40,8 @@ module udp_axis_master # (
     var logic [15:0] dest_port;
     var logic [15:0] frame_length;
 
-    var logic [TRANSFER_ID_WIDTH-1:0] transfer_id;
-    var logic [$clog(TRANSFER_ID_WIDTH)-1:0] id_byte_index;
+    var logic [47:0] transfer_id;
+    var logic [5:0] id_byte_index;
 
     AXIS_IF # (
         .TDATA_WIDTH(8),
@@ -129,15 +126,13 @@ module udp_axis_master # (
     always_ff @ (posedge clk) begin
         if (reset) begin
             state <= STATE_RX_HEADER;
-            axis_if.tvalid <= 1'b0;
             
             udp_tx_header_if.hdr_valid <= 1'b0;
             udp_tx_payload_if.tvalid <= 1'b0;
             udp_tx_payload_if.tuser <= 1'b0; // Constantly set to zero
-            
 
             udp_rx_header_if.hdr_ready <= 1'b0;
-            axis_mux_to_udp_if_if.tready <= 1'b0;
+            axis_mux_to_udp_if.tready <= 1'b0;
         end else begin
             case (state)
                 // Read in a UDP header
@@ -155,7 +150,7 @@ module udp_axis_master # (
 
                         if (udp_rx_header_if.dest_port == UDP_PORT) begin
                             axis_mux_to_udp_if.tready <= 1'b1;
-                            id_byte_index <= $clog2(TRANSFER_ID_WIDTH)'d0;
+                            id_byte_index <= 48'd0;
 
                             state <= STATE_RX_ID;
                         end else begin
@@ -197,7 +192,7 @@ module udp_axis_master # (
                         udp_tx_header_if.ip_dest_ip     <= source_ip;
                         udp_tx_header_if.source_port    <= dest_port;
                         udp_tx_header_if.dest_port      <= source_port;
-                        udp_tx_header_if.length         <= 8 + $clog2(TRANSFER_ID_WIDTH);
+                        udp_tx_header_if.length         <= 14;
                         udp_tx_header_if.checksum       <= '0;
 
                         state <= STATE_TX_HEADER;
@@ -209,7 +204,7 @@ module udp_axis_master # (
                     if (udp_tx_header_if.hdr_valid && udp_tx_header_if.hdr_ready) begin
                         udp_tx_header_if.hdr_valid <= 1'b0;
 
-                        id_byte_index <= $clog2(TRANSFER_ID_WIDTH)'d1;
+                        id_byte_index <= 48'd1;
 
                         udp_tx_payload_if.tvalid <= 1'b1;
                         udp_tx_payload_if.tdata <= transfer_id[7:0];
