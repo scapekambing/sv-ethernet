@@ -179,7 +179,7 @@ class AXIS_Master_BFM # (
 
     task automatic simple_transfer(
         ref var logic clk,
-        input var logic [data_width-1:0] data,
+        input var logic [data_width-1:0] data
     );
         var logic [strobe_width-1:0] strobe = ~ '0;
         var logic [keep_width-1:0] keep = ~ '0;
