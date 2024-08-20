@@ -67,7 +67,7 @@ module udp_switch # (
         .clk(clk),
         .reset(reset),
         .udp_tx_header_if_sink(udp_tx_header_if_sink),
-        .udp_tx_payload_if_sink(udp_tx_header_if_sink),
+        .udp_tx_payload_if_sink(udp_tx_payload_if_sink),
         .udp_tx_header_if_source(udp_tx_header_if_source),
         .udp_tx_payload_if_source(udp_tx_payload_if_source)
     );

@@ -9,7 +9,7 @@ OP_WRITE_OK = 2
 OP_READ_OK = 3
 
 UDP_IP = "192.168.1.128" # The IP address of the FPGA
-UDP_PORT = 1234
+UDP_PORT = 1230
 
 class Packet:
     def __init__(self, opcode, address, data):
