@@ -4,7 +4,7 @@
 `default_nettype none
 
 module udp_spam # (
-    //
+    parameter int UDP_PORT = 1234
 ) (
     input var logic clk,
     input var logic reset,
@@ -27,7 +27,7 @@ module udp_spam # (
     assign udp_tx_header_if.ip_source_ip = {8'd192, 8'd168, 8'd1, 8'd128};
     assign udp_tx_header_if.ip_dest_ip = {8'd192, 8'd168, 8'd1, 8'd2};
     assign udp_tx_header_if.dest_port = 5678;
-    assign udp_tx_header_if.source_port = 1234;
+    assign udp_tx_header_if.source_port = UDP_PORT;
     assign udp_tx_header_if.length = 1;
     assign udp_tx_header_if.checksum = 0;
 

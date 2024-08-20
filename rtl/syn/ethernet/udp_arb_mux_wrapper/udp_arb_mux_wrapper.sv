@@ -16,12 +16,12 @@ module udp_arb_mux_wrapper # (
 ) (
     input var logic         clk,
     input var logic         reset,
-
+    
     UDP_TX_HEADER_IF.Sink   udp_tx_header_if_sink [S_COUNT],
     AXIS_IF.Receiver        udp_tx_payload_if_sink [S_COUNT],
 
     UDP_TX_HEADER_IF.Source udp_tx_header_if_source,
-    AXIS_IF.Transmitter     udp_tx_payload_if_source,
+    AXIS_IF.Transmitter     udp_tx_payload_if_source
 );
     generate
         for (genvar i = 0; i < S_COUNT; i++) begin
@@ -102,21 +102,21 @@ module udp_arb_mux_wrapper # (
                 temp_udp_hdr_valid[i]                   = udp_tx_header_if_sink[i].hdr_valid;
                 udp_tx_header_if_sink[i].hdr_ready      = temp_udp_hdr_ready[i];
 
-                temp_eth_dest_mac[48*i+47:48*i]         = udp_tx_header_if_sink[i].eth_dest_mac;
-                temp_eth_src_mac[48*i+47:48*i]          = udp_tx_header_if_sink[i].eth_src_mac;
-                temp_eth_type[16*i+15:16*i]             = udp_tx_header_if_sink[i].eth_type;
+                temp_eth_dest_mac[48*i+47:48*i]         = 48'b0;
+                temp_eth_src_mac[48*i+47:48*i]          = 48'b0;
+                temp_eth_type[16*i+15:16*i]             = 16'b0;
 
-                temp_ip_version[4*i+3:4*i]              = udp_tx_header_if_sink[i].ip_version;
-                temp_ip_ihl[4*i+4:4*i]                  = udp_tx_header_if_sink[i].ip_ihl;
+                temp_ip_version[4*i+3:4*i]              = 4'b0;
+                temp_ip_ihl[4*i+3:4*i]                  = 4'b0;
                 temp_ip_dscp[6*i+5:6*i]                 = udp_tx_header_if_sink[i].ip_dscp;
                 temp_ip_ecn[2*i+1:2*i]                  = udp_tx_header_if_sink[i].ip_ecn;
-                temp_ip_length[16*i+15:16*i]            = udp_tx_header_if_sink[i].ip_length;
-                temp_ip_identification[16*i+15:16*i]    = udp_tx_header_if_sink[i].ip_identification;
-                temp_ip_flags[3*i+2:3*i]                = udp_tx_header_if_sink[i].ip_flags;
-                temp_ip_fragment_offset[13*i+12:13*i]   = udp_tx_header_if_sink[i].ip_fragment_offset;
+                temp_ip_length[16*i+15:16*i]            = 16'b0;
+                temp_ip_identification[16*i+15:16*i]    = 16'b0;
+                temp_ip_flags[3*i+2:3*i]                = 3'b0;
+                temp_ip_fragment_offset[13*i+12:13*i]   = 13'b0;
                 temp_ip_ttl[8*i+7:8*i]                  = udp_tx_header_if_sink[i].ip_ttl;
-                temp_ip_protocol[8*i+7:8*i]             = udp_tx_header_if_sink[i].ip_protocol;
-                temp_ip_header_checksum[16*i+15:16*i]   = udp_tx_header_if_sink[i].ip_header_checksum;
+                temp_ip_protocol[8*i+7:8*i]             = 8'b0;
+                temp_ip_header_checksum[16*i+15:16*i]   = 16'b0;
                 temp_ip_source_ip[32*i+31:32*i]         = udp_tx_header_if_sink[i].ip_source_ip;
                 temp_ip_dest_ip[32*i+31:32*i]           = udp_tx_header_if_sink[i].ip_dest_ip;
 
@@ -189,20 +189,20 @@ module udp_arb_mux_wrapper # (
 
         .m_udp_hdr_valid(udp_tx_header_if_source.hdr_valid),
         .m_udp_hdr_ready(udp_tx_header_if_source.hdr_ready),
-        .m_eth_dest_mac(udp_tx_header_if_source.eth_dest_mac),
-        .m_eth_src_mac(udp_tx_header_if_source.eth_src_mac),
-        .m_eth_type(udp_tx_header_if_source.eth_type),
-        .m_ip_version(udp_tx_header_if_source.ip_version),
-        .m_ip_ihl(udp_tx_header_if_source.ip_ihl),
+        .m_eth_dest_mac(),
+        .m_eth_src_mac(),
+        .m_eth_type(),
+        .m_ip_version(),
+        .m_ip_ihl(),
         .m_ip_dscp(udp_tx_header_if_source.ip_dscp),
         .m_ip_ecn(udp_tx_header_if_source.ip_ecn),
-        .m_ip_length(udp_tx_header_if_source.ip_length),
-        .m_ip_identification(udp_tx_header_if_source.ip_identification),
-        .m_ip_flags(udp_tx_header_if_source.ip_flags),
-        .m_ip_fragment_offset(udp_tx_header_if_source.ip_fragment_offset),
+        .m_ip_length(),
+        .m_ip_identification(),
+        .m_ip_flags(),
+        .m_ip_fragment_offset(),
         .m_ip_ttl(udp_tx_header_if_source.ip_ttl),
-        .m_ip_protocol(udp_tx_header_if_source.ip_protocol),
-        .m_ip_header_checksum(udp_tx_header_if_source.ip_header_checksum),
+        .m_ip_protocol(),
+        .m_ip_header_checksum(),
         .m_ip_source_ip(udp_tx_header_if_source.ip_source_ip),
         .m_ip_dest_ip(udp_tx_header_if_source.ip_dest_ip),
         .m_udp_source_port(udp_tx_header_if_source.source_port),

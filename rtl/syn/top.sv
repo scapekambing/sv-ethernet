@@ -169,9 +169,7 @@ module top #(
         .subnet_mask({8'd255, 8'd255, 8'd255, 8'd0}),
         .clear_arp_cache(0),
         
-        .screamer_enable(btn[0]),
-
-        .udp_payload_selection(sw[1:0])
+        .screamer_enable(btn[0])
     );
 
     axil_ram_wrapper # (
