@@ -58,6 +58,8 @@ module top #(
 
     var logic clk_25mhz_mmcm_out;
     var logic clk_25mhz_int;
+    var logic clk_61_44mhz_mmcm_out;
+    var logic clk_61_44mhz_int;
 
     /* MMCM Instance
      * 100 MHz input, 125 & 25 MHz output
@@ -69,13 +71,13 @@ module top #(
     */
     MMCME2_BASE # (
         .BANDWIDTH("OPTIMIZED"),
-        .CLKOUT0_DIVIDE_F(8),
+        .CLKOUT0_DIVIDE_F(16.276),
         .CLKOUT0_DUTY_CYCLE(0.5),
         .CLKOUT0_PHASE(0),
-        .CLKOUT1_DIVIDE(40),
+        .CLKOUT1_DIVIDE(8),
         .CLKOUT1_DUTY_CYCLE(0.5),
         .CLKOUT1_PHASE(0),
-        .CLKOUT2_DIVIDE(1),
+        .CLKOUT2_DIVIDE(40),
         .CLKOUT2_DUTY_CYCLE(0.5),
         .CLKOUT2_PHASE(0),
         .CLKOUT3_DIVIDE(1),
@@ -102,11 +104,11 @@ module top #(
         .CLKFBIN(mmcm_clkfb),
         .RST(mmcm_rst),
         .PWRDWN('0),
-        .CLKOUT0(clk_mmcm_out),
+        .CLKOUT0(clk_61_44mhz_mmcm_out),
         .CLKOUT0B(),
-        .CLKOUT1(clk_25mhz_mmcm_out),
+        .CLKOUT1(clk_mmcm_out),
         .CLKOUT1B(),
-        .CLKOUT2(),
+        .CLKOUT2(clk_25mhz_mmcm_out),
         .CLKOUT2B(),
         .CLKOUT3(),
         .CLKOUT3B(),
@@ -126,6 +128,11 @@ module top #(
     BUFG clk_25mhz_bufg_inst (
         .I(clk_25mhz_mmcm_out),
         .O(clk_25mhz_int)
+    );
+
+    BUFG clk_61_44mhz_bufg_inst (
+        .I(clk_61_44mhz_mmcm_out),
+        .O(clk_61_44mhz_int)
     );
 
     // Sync reset originates from the verilog-axis library in the ethernet library
@@ -153,6 +160,12 @@ module top #(
 
     AXIL_IF axil_if();
 
+    AXIS_IF # (
+        .TDATA_WIDTH(16),
+        .TUSER_WIDTH(1),
+        .TKEEP_ENABLE(0)
+    ) axis_if();
+
     eth_top # (
         .TARGET("XILINX")
     ) eth_inst (
@@ -161,7 +174,7 @@ module top #(
 
         .mii_if(mii_if.MAC),
 
-        .axil_if(axil_if.Master),
+        .axis_dac_if(axis_if.Transmitter),
 
         .local_mac(48'h02_00_00_00_00_00),
         .local_ip({8'd192, 8'd168, 8'd1, 8'd128}),
@@ -170,15 +183,6 @@ module top #(
         .clear_arp_cache(0),
         
         .screamer_enable(btn[0])
-    );
-
-    axil_ram_wrapper # (
-        // Using default
-    ) axil_ram_wrapper_inst (
-        .clk(clk_int),
-        .reset(rst_int),
-
-        .axil_if(axil_if.Slave)
     );
 
     always_ff @ (posedge clk_int) begin

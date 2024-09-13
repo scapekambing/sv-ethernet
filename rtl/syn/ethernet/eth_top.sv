@@ -17,7 +17,7 @@ module eth_top # (
 
    MII_IF.MAC mii_if,
 
-   AXIL_IF.Master axil_if,
+   AXIS_IF.Transmitter axis_dac_if,
 
    input var logic [47:0] local_mac,
    input var logic [31:0] local_ip,
@@ -214,19 +214,19 @@ module eth_top # (
       .udp_rx_payload_if_sink(udp_rx_payload_if)
    );
 
-   udp_axil_bridge # (
+   udp_axis_master # (
       .UDP_PORT(PORTS[0])
-   ) udp_axil_bridge_inst (
+   ) udp_axis_master_inst (
       .clk(clk),
       .reset(reset),
-
+      
       .udp_tx_header_if(udp_tx_header_if_mux[0]),
       .udp_tx_payload_if(udp_tx_payload_if_mux[0]),
 
       .udp_rx_header_if(udp_rx_header_if_mux[0]),
       .udp_rx_payload_if(udp_rx_payload_if_mux[0]),
 
-      .axil_if(axil_if)
+      .out_axis_if(axis_dac_if)
    );
 
    udp_loopback # (
