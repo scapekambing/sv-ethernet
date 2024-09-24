@@ -1,3 +1,4 @@
+python/workspace/modelsim
+python/__pycache__
 .vscode/*
-workspace/vivado/projectflow
-workspace/vivado/projecflow/*
+*.code-workspace
