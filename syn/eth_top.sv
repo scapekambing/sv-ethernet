@@ -17,7 +17,7 @@ module eth_top # (
 
    MII_IF.MAC mii_if,
 
-   AXIS_IF.Master axis_dac_if,
+   AXIS_IF.Master axis_master_if,
 
    input var logic [47:0] local_mac,
    input var logic [31:0] local_ip,
