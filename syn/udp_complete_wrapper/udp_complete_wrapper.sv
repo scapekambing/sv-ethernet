@@ -74,7 +74,7 @@ module udp_complete_wrapper # (
 
    initial begin
         assert (eth_rx_payload_if.TDATA_WIDTH == 8 &&
-                output_eth_payload_if.TDATA_WIDTH == 8 &&
+                eth_tx_payload_if.TDATA_WIDTH == 8 &&
                 ip_tx_payload_if.TDATA_WIDTH == 8 &&
                 ip_rx_payload_if.TDATA_WIDTH == 8 &&
                 udp_tx_payload_if.TDATA_WIDTH == 8 &&
@@ -84,7 +84,7 @@ module udp_complete_wrapper # (
 
     initial begin
         assert (eth_rx_payload_if.TID_WIDTH == 0 &&
-                output_eth_payload_if.TID_WIDTH == 0 &&
+                eth_tx_payload_if.TID_WIDTH == 0 &&
                 ip_tx_payload_if.TID_WIDTH == 0 &&
                 ip_rx_payload_if.TID_WIDTH == 0 &&
                 udp_tx_payload_if.TID_WIDTH == 0 &&
@@ -94,7 +94,7 @@ module udp_complete_wrapper # (
 
     initial begin
         assert (eth_rx_payload_if.TUSER_WIDTH == 1 &&
-                output_eth_payload_if.TUSER_WIDTH == 1 &&
+                eth_tx_payload_if.TUSER_WIDTH == 1 &&
                 ip_tx_payload_if.TUSER_WIDTH == 1 &&
                 ip_rx_payload_if.TUSER_WIDTH == 1 &&
                 udp_tx_payload_if.TUSER_WIDTH == 1 &&
@@ -104,7 +104,7 @@ module udp_complete_wrapper # (
 
     initial begin
         assert (eth_rx_payload_if.TDEST_WIDTH == 0 &&
-                output_eth_payload_if.TDEST_WIDTH == 0 &&
+                eth_tx_payload_if.TDEST_WIDTH == 0 &&
                 ip_tx_payload_if.TDEST_WIDTH == 0 &&
                 ip_rx_payload_if.TDEST_WIDTH == 0 &&
                 udp_tx_payload_if.TDEST_WIDTH == 0 &&
@@ -114,7 +114,7 @@ module udp_complete_wrapper # (
 
     initial begin
         assert (eth_rx_payload_if.TKEEP_ENABLE == 0 &&
-                output_eth_payload_if.TKEEP_ENABLE == 0 &&
+                eth_tx_payload_if.TKEEP_ENABLE == 0 &&
                 ip_tx_payload_if.TKEEP_ENABLE == 0 &&
                 ip_rx_payload_if.TKEEP_ENABLE == 0 &&
                 udp_tx_payload_if.TKEEP_ENABLE == 0 &&
@@ -124,7 +124,7 @@ module udp_complete_wrapper # (
 
     initial begin
         assert (eth_rx_payload_if.TWAKEUP_ENABLE == 0 &&
-                output_eth_payload_if.TWAKEUP_ENABLE == 0 &&
+                eth_tx_payload_if.TWAKEUP_ENABLE == 0 &&
                 ip_tx_payload_if.TWAKEUP_ENABLE == 0 &&
                 ip_rx_payload_if.TWAKEUP_ENABLE == 0 &&
                 udp_tx_payload_if.TWAKEUP_ENABLE == 0 &&
@@ -152,11 +152,11 @@ module udp_complete_wrapper # (
       .m_eth_dest_mac(output_eth_header_if.dest_mac),
       .m_eth_src_mac(output_eth_header_if.src_mac),
       .m_eth_type(output_eth_header_if.eth_type),
-      .m_eth_payload_axis_tdata(output_eth_payload_if.tdata),
-      .m_eth_payload_axis_tvalid(output_eth_payload_if.tvalid),
-      .m_eth_payload_axis_tready(output_eth_payload_if.tready),
-      .m_eth_payload_axis_tlast(output_eth_payload_if.tlast),
-      .m_eth_payload_axis_tuser(output_eth_payload_if.tuser),
+      .m_eth_payload_axis_tdata(eth_tx_payload_if.tdata),
+      .m_eth_payload_axis_tvalid(eth_tx_payload_if.tvalid),
+      .m_eth_payload_axis_tready(eth_tx_payload_if.tready),
+      .m_eth_payload_axis_tlast(eth_tx_payload_if.tlast),
+      .m_eth_payload_axis_tuser(eth_tx_payload_if.tuser),
 
       .s_ip_hdr_valid(ip_tx_header_if.hdr_valid),
       .s_ip_hdr_ready(ip_tx_header_if.hdr_ready),
