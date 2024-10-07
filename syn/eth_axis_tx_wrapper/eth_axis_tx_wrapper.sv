@@ -54,32 +54,32 @@ module eth_axis_tx_wrapper # (
     end
 
     initial begin
-        assert (eth_payload_in_if.TDATA_WIDTH == 8)
-        else $error("Assertion in %m failed, eth_payload_in_if TDATA_WIDTH should be 8");
+        assert (eth_tx_payload_if.TDATA_WIDTH == 8)
+        else $error("Assertion in %m failed, eth_tx_payload_if TDATA_WIDTH should be 8");
     end
 
     initial begin
-        assert (eth_payload_in_if.TID_WIDTH == 0)
-        else $error("Assertion in %m failed, eth_payload_in_if TID_WIDTH should be 0");
+        assert (eth_tx_payload_if.TID_WIDTH == 0)
+        else $error("Assertion in %m failed, eth_tx_payload_if TID_WIDTH should be 0");
     end
 
     initial begin
-        assert (eth_payload_in_if.TDEST_WIDTH == 0)
-        else $error("Assertion in %m failed, eth_payload_in_if TDEST_WIDTH should be 0");
+        assert (eth_tx_payload_if.TDEST_WIDTH == 0)
+        else $error("Assertion in %m failed, eth_tx_payload_if TDEST_WIDTH should be 0");
     end
 
     initial begin
-        assert (eth_payload_in_if.TUSER_WIDTH == 1)
-        else $error("Assertion in %m failed, eth_payload_in_if TUSER_WIDTH should be 1");
+        assert (eth_tx_payload_if.TUSER_WIDTH == 1)
+        else $error("Assertion in %m failed, eth_tx_payload_if TUSER_WIDTH should be 1");
     end
 
     initial begin
-        assert (eth_payload_in_if.TKEEP_ENABLE == KEEP_ENABLE)
-        else $error("Assertion in %m failed, eth_payload_in_if TKEEP_ENABLE should be same as KEEP_ENABLE parameter");
+        assert (eth_tx_payload_if.TKEEP_ENABLE == KEEP_ENABLE)
+        else $error("Assertion in %m failed, eth_tx_payload_if TKEEP_ENABLE should be same as KEEP_ENABLE parameter");
     end
 
     initial begin
-        assert (eth_payload_in_if.TWAKEUP_ENABLE == 0)
+        assert (eth_tx_payload_if.TWAKEUP_ENABLE == 0)
         else $error("Assertion in %m failed,eth_payload_ins_if TWAKEUP_ENABLE should be 0");
     end
 
@@ -98,18 +98,18 @@ module eth_axis_tx_wrapper # (
         .m_axis_tlast(mii_axis_if.tlast),
         .m_axis_tuser(mii_axis_if.tuser),
 
-        .s_eth_hdr_valid(eth_header_in_if.valid),
-        .s_eth_hdr_ready(eth_header_in_if.ready),
-        .s_eth_dest_mac(eth_header_in_if.dest_mac),
-        .s_eth_src_mac(eth_header_in_if.src_mac),
-        .s_eth_type(eth_header_in_if.eth_type),
+        .s_eth_hdr_valid(eth_tx_header_if.valid),
+        .s_eth_hdr_ready(eth_tx_header_if.ready),
+        .s_eth_dest_mac(eth_tx_header_if.dest_mac),
+        .s_eth_src_mac(eth_tx_header_if.src_mac),
+        .s_eth_type(eth_tx_header_if.eth_type),
 
-        .s_eth_payload_axis_tdata(eth_payload_in_if.tdata),
-        .s_eth_payload_axis_tkeep(eth_payload_in_if.tkeep),
-        .s_eth_payload_axis_tvalid(eth_payload_in_if.tvalid),
-        .s_eth_payload_axis_tready(eth_payload_in_if.tready),
-        .s_eth_payload_axis_tlast(eth_payload_in_if.tlast),
-        .s_eth_payload_axis_tuser(eth_payload_in_if.tuser),
+        .s_eth_payload_axis_tdata(eth_tx_payload_if.tdata),
+        .s_eth_payload_axis_tkeep(eth_tx_payload_if.tkeep),
+        .s_eth_payload_axis_tvalid(eth_tx_payload_if.tvalid),
+        .s_eth_payload_axis_tready(eth_tx_payload_if.tready),
+        .s_eth_payload_axis_tlast(eth_tx_payload_if.tlast),
+        .s_eth_payload_axis_tuser(eth_tx_payload_if.tuser),
 
         .busy(busy)
     );
