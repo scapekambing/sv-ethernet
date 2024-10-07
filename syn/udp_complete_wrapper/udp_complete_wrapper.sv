@@ -73,60 +73,60 @@ module udp_complete_wrapper # (
 );
 
    initial begin
-        assert (input_eth_payload_if.TDATA_WIDTH == 8 &&
+        assert (eth_rx_payload_if.TDATA_WIDTH == 8 &&
                 output_eth_payload_if.TDATA_WIDTH == 8 &&
-                ip_input_payload_if.TDATA_WIDTH == 8 &&
-                ip_output_payload_if.TDATA_WIDTH == 8 &&
+                ip_tx_payload_if.TDATA_WIDTH == 8 &&
+                ip_rx_payload_if.TDATA_WIDTH == 8 &&
                 udp_tx_payload_if.TDATA_WIDTH == 8 &&
                 udp_rx_payload_if.TDATA_WIDTH == 8)
         else $error("Assertion in %m failed, TDATA_WIDTH parameter in the AXIS interfaces should be 8");
     end
 
     initial begin
-        assert (input_eth_payload_if.TID_WIDTH == 0 &&
+        assert (eth_rx_payload_if.TID_WIDTH == 0 &&
                 output_eth_payload_if.TID_WIDTH == 0 &&
-                ip_input_payload_if.TID_WIDTH == 0 &&
-                ip_output_payload_if.TID_WIDTH == 0 &&
+                ip_tx_payload_if.TID_WIDTH == 0 &&
+                ip_rx_payload_if.TID_WIDTH == 0 &&
                 udp_tx_payload_if.TID_WIDTH == 0 &&
                 udp_rx_payload_if.TID_WIDTH == 0)
         else $error("Assertion in %m failed, TID_WIDTH parameter in the AXIS interfaces should be 0");
     end
 
     initial begin
-        assert (input_eth_payload_if.TUSER_WIDTH == 1 &&
+        assert (eth_rx_payload_if.TUSER_WIDTH == 1 &&
                 output_eth_payload_if.TUSER_WIDTH == 1 &&
-                ip_input_payload_if.TUSER_WIDTH == 1 &&
-                ip_output_payload_if.TUSER_WIDTH == 1 &&
+                ip_tx_payload_if.TUSER_WIDTH == 1 &&
+                ip_rx_payload_if.TUSER_WIDTH == 1 &&
                 udp_tx_payload_if.TUSER_WIDTH == 1 &&
                 udp_rx_payload_if.TUSER_WIDTH == 1)
         else $error("Assertion in %m failed, TUSER_WIDTH parameter in the AXIS interfaces should be 1");
     end
 
     initial begin
-        assert (input_eth_payload_if.TDEST_WIDTH == 0 &&
+        assert (eth_rx_payload_if.TDEST_WIDTH == 0 &&
                 output_eth_payload_if.TDEST_WIDTH == 0 &&
-                ip_input_payload_if.TDEST_WIDTH == 0 &&
-                ip_output_payload_if.TDEST_WIDTH == 0 &&
+                ip_tx_payload_if.TDEST_WIDTH == 0 &&
+                ip_rx_payload_if.TDEST_WIDTH == 0 &&
                 udp_tx_payload_if.TDEST_WIDTH == 0 &&
                 udp_rx_payload_if.TDEST_WIDTH == 0)
         else $error("Assertion in %m failed, TDEST_WIDTH parameter in the AXIS interfaces should be 0");
     end
 
     initial begin
-        assert (input_eth_payload_if.TKEEP_ENABLE == 0 &&
+        assert (eth_rx_payload_if.TKEEP_ENABLE == 0 &&
                 output_eth_payload_if.TKEEP_ENABLE == 0 &&
-                ip_input_payload_if.TKEEP_ENABLE == 0 &&
-                ip_output_payload_if.TKEEP_ENABLE == 0 &&
+                ip_tx_payload_if.TKEEP_ENABLE == 0 &&
+                ip_rx_payload_if.TKEEP_ENABLE == 0 &&
                 udp_tx_payload_if.TKEEP_ENABLE == 0 &&
                 udp_rx_payload_if.TKEEP_ENABLE == 0)
         else $error("Assertion in %m failed, TKEEP_ENABLE parameter in the AXIS interfaces should be 0");
     end
 
     initial begin
-        assert (input_eth_payload_if.TWAKEUP_ENABLE == 0 &&
+        assert (eth_rx_payload_if.TWAKEUP_ENABLE == 0 &&
                 output_eth_payload_if.TWAKEUP_ENABLE == 0 &&
-                ip_input_payload_if.TWAKEUP_ENABLE == 0 &&
-                ip_output_payload_if.TWAKEUP_ENABLE == 0 &&
+                ip_tx_payload_if.TWAKEUP_ENABLE == 0 &&
+                ip_rx_payload_if.TWAKEUP_ENABLE == 0 &&
                 udp_tx_payload_if.TWAKEUP_ENABLE == 0 &&
                 udp_rx_payload_if.TWAKEUP_ENABLE == 0)
         else $error("Assertion in %m failed, TWAKEUP_ENABLE parameter in the AXIS interfaces should be 0");
@@ -136,16 +136,16 @@ module udp_complete_wrapper # (
       .clk(clk),
       .rst(reset),
 
-      .s_eth_hdr_valid(input_eth_header_if.valid),
-      .s_eth_hdr_ready(input_eth_header_if.ready),
-      .s_eth_dest_mac(input_eth_header_if.dest_mac),
-      .s_eth_src_mac(input_eth_header_if.src_mac),
-      .s_eth_type(input_eth_header_if.eth_type),
-      .s_eth_payload_axis_tdata(input_eth_payload_if.tdata),
-      .s_eth_payload_axis_tvalid(input_eth_payload_if.tvalid),
-      .s_eth_payload_axis_tready(input_eth_payload_if.tready),
-      .s_eth_payload_axis_tlast(input_eth_payload_if.tlast),
-      .s_eth_payload_axis_tuser(input_eth_payload_if.tuser),
+      .s_eth_hdr_valid(eth_rx_header_if.valid),
+      .s_eth_hdr_ready(eth_rx_header_if.ready),
+      .s_eth_dest_mac(eth_rx_header_if.dest_mac),
+      .s_eth_src_mac(eth_rx_header_if.src_mac),
+      .s_eth_type(eth_rx_header_if.eth_type),
+      .s_eth_payload_axis_tdata(eth_rx_payload_if.tdata),
+      .s_eth_payload_axis_tvalid(eth_rx_payload_if.tvalid),
+      .s_eth_payload_axis_tready(eth_rx_payload_if.tready),
+      .s_eth_payload_axis_tlast(eth_rx_payload_if.tlast),
+      .s_eth_payload_axis_tuser(eth_rx_payload_if.tuser),
 
       .m_eth_hdr_valid(output_eth_header_if.valid),
       .m_eth_hdr_ready(output_eth_header_if.ready),
@@ -158,44 +158,44 @@ module udp_complete_wrapper # (
       .m_eth_payload_axis_tlast(output_eth_payload_if.tlast),
       .m_eth_payload_axis_tuser(output_eth_payload_if.tuser),
 
-      .s_ip_hdr_valid(ip_input_header_if.hdr_valid),
-      .s_ip_hdr_ready(ip_input_header_if.hdr_ready),
-      .s_ip_dscp(ip_input_header_if.dscp),
-      .s_ip_ecn(ip_input_header_if.ecn),
-      .s_ip_length(ip_input_header_if.length),
-      .s_ip_ttl(ip_input_header_if.ttl),
-      .s_ip_protocol(ip_input_header_if.protocol),
-      .s_ip_source_ip(ip_input_header_if.source_ip),
-      .s_ip_dest_ip(ip_input_header_if.dest_ip),
-      .s_ip_payload_axis_tdata(ip_input_payload_if.tdata),
-      .s_ip_payload_axis_tvalid(ip_input_payload_if.tvalid),
-      .s_ip_payload_axis_tready(ip_input_payload_if.tready),
-      .s_ip_payload_axis_tlast(ip_input_payload_if.tlast),
-      .s_ip_payload_axis_tuser(ip_input_payload_if.tuser),
+      .s_ip_hdr_valid(ip_tx_header_if.hdr_valid),
+      .s_ip_hdr_ready(ip_tx_header_if.hdr_ready),
+      .s_ip_dscp(ip_tx_header_if.dscp),
+      .s_ip_ecn(ip_tx_header_if.ecn),
+      .s_ip_length(ip_tx_header_if.length),
+      .s_ip_ttl(ip_tx_header_if.ttl),
+      .s_ip_protocol(ip_tx_header_if.protocol),
+      .s_ip_source_ip(ip_tx_header_if.source_ip),
+      .s_ip_dest_ip(ip_tx_header_if.dest_ip),
+      .s_ip_payload_axis_tdata(ip_tx_payload_if.tdata),
+      .s_ip_payload_axis_tvalid(ip_tx_payload_if.tvalid),
+      .s_ip_payload_axis_tready(ip_tx_payload_if.tready),
+      .s_ip_payload_axis_tlast(ip_tx_payload_if.tlast),
+      .s_ip_payload_axis_tuser(ip_tx_payload_if.tuser),
 
-      .m_ip_hdr_valid(ip_output_header_if.hdr_valid),
-      .m_ip_hdr_ready(ip_output_header_if.hdr_ready),
-      .m_ip_eth_dest_mac(ip_output_header_if.eth_dest_mac),
-      .m_ip_eth_src_mac(ip_output_header_if.eth_src_mac),
-      .m_ip_eth_type(ip_output_header_if.eth_type),
-      .m_ip_version(ip_output_header_if.version),
-      .m_ip_ihl(ip_output_header_if.ihl),
-      .m_ip_dscp(ip_output_header_if.dscp),
-      .m_ip_ecn(ip_output_header_if.ecn),
-      .m_ip_length(ip_output_header_if.length),
-      .m_ip_identification(ip_output_header_if.identification),
-      .m_ip_flags(ip_output_header_if.flags),
-      .m_ip_fragment_offset(ip_output_header_if.fragment_offset),
-      .m_ip_ttl(ip_output_header_if.ttl),
-      .m_ip_protocol(ip_output_header_if.protocol),
-      .m_ip_header_checksum(ip_output_header_if.header_checksum),
-      .m_ip_source_ip(ip_output_header_if.source_ip),
-      .m_ip_dest_ip(ip_output_header_if.dest_ip),
-      .m_ip_payload_axis_tdata(ip_output_payload_if.tdata),
-      .m_ip_payload_axis_tvalid(ip_output_payload_if.tvalid),
-      .m_ip_payload_axis_tready(ip_output_payload_if.tready),
-      .m_ip_payload_axis_tlast(ip_output_payload_if.tlast),
-      .m_ip_payload_axis_tuser(ip_output_payload_if.tuser),
+      .m_ip_hdr_valid(ip_rx_header_if.hdr_valid),
+      .m_ip_hdr_ready(ip_rx_header_if.hdr_ready),
+      .m_ip_eth_dest_mac(ip_rx_header_if.eth_dest_mac),
+      .m_ip_eth_src_mac(ip_rx_header_if.eth_src_mac),
+      .m_ip_eth_type(ip_rx_header_if.eth_type),
+      .m_ip_version(ip_rx_header_if.version),
+      .m_ip_ihl(ip_rx_header_if.ihl),
+      .m_ip_dscp(ip_rx_header_if.dscp),
+      .m_ip_ecn(ip_rx_header_if.ecn),
+      .m_ip_length(ip_rx_header_if.length),
+      .m_ip_identification(ip_rx_header_if.identification),
+      .m_ip_flags(ip_rx_header_if.flags),
+      .m_ip_fragment_offset(ip_rx_header_if.fragment_offset),
+      .m_ip_ttl(ip_rx_header_if.ttl),
+      .m_ip_protocol(ip_rx_header_if.protocol),
+      .m_ip_header_checksum(ip_rx_header_if.header_checksum),
+      .m_ip_source_ip(ip_rx_header_if.source_ip),
+      .m_ip_dest_ip(ip_rx_header_if.dest_ip),
+      .m_ip_payload_axis_tdata(ip_rx_payload_if.tdata),
+      .m_ip_payload_axis_tvalid(ip_rx_payload_if.tvalid),
+      .m_ip_payload_axis_tready(ip_rx_payload_if.tready),
+      .m_ip_payload_axis_tlast(ip_rx_payload_if.tlast),
+      .m_ip_payload_axis_tuser(ip_rx_payload_if.tuser),
 
       // Logic to PHY
       .s_udp_hdr_valid(udp_tx_header_if.hdr_valid),
