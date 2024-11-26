@@ -20,10 +20,10 @@ module eth_top # (
    AXIS_IF.Slave mii_tx_axis_if,
    AXIS_IF.Master mii_rx_axis_if,
 
-   UDP_TX_HEADER_IF udp_tx_header_if_mux [PORT_COUNT]();
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if_mux [PORT_COUNT]();
-   UDP_RX_HEADER_IF udp_rx_header_if_mux [PORT_COUNT]();
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux [PORT_COUNT]();
+   UDP_TX_HEADER_IF.Sink udp_tx_header_if_mux [PORT_COUNT],
+   AXIS_IF.Slave udp_tx_payload_if_mux [PORT_COUNT],
+   UDP_RX_HEADER_IF.Source udp_rx_header_if_mux [PORT_COUNT],
+   AXIS_IF.Master udp_rx_payload_if_mux [PORT_COUNT],
 
    input var logic [47:0] local_mac,
    input var logic [31:0] local_ip,
