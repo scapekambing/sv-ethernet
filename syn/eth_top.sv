@@ -17,8 +17,8 @@ module eth_top # (
    input var logic clk,
    input var logic reset,
 
-   AXIS_IF.Slave mii_tx_axis_if,
-   AXIS_IF.Master mii_rx_axis_if,
+   AXIS_IF.Master mii_tx_axis_if,
+   AXIS_IF.Slave mii_rx_axis_if,
 
    UDP_TX_HEADER_IF.Sink udp_tx_header_if_mux [PORT_COUNT],
    AXIS_IF.Slave udp_tx_payload_if_mux [PORT_COUNT],
