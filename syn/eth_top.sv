@@ -10,55 +10,48 @@
 `default_nettype none
 
 module eth_top # (
-   parameter string TARGET = "GENERIC"
+   parameter string TARGET = "GENERIC",
+   parameter int PORT_COUNT = 1,
+   parameter bit [15:0] PORTS [PORT_COUNT] = {1234}
 ) (
    input var logic clk,
    input var logic reset,
 
    MII_IF.MAC mii_if,
 
-   AXIS_IF.Master axis_master_if,
+   AXIS_IF.Slave mii_tx_axis_if,
+   AXIS_IF.Master mii_rx_axis_if,
+
+   UDP_TX_HEADER_IF udp_tx_header_if_mux [PORT_COUNT]();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if_mux [PORT_COUNT]();
+   UDP_RX_HEADER_IF udp_rx_header_if_mux [PORT_COUNT]();
+   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux [PORT_COUNT]();
 
    input var logic [47:0] local_mac,
    input var logic [31:0] local_ip,
    input var logic [31:0] gateway_ip,
    input var logic [31:0] subnet_mask,
-   input var logic clear_arp_cache,
-
-   input var logic screamer_enable
+   input var logic clear_arp_cache
 );
    localparam int AXIS_TDATA_WIDTH = 8;
    localparam bit AXIS_TKEEP_ENABLE = AXIS_TDATA_WIDTH > 8;
 
    /* Interfaces */
-
-   AXIS_IF # (
-      .TDATA_WIDTH(AXIS_TDATA_WIDTH),
-      .TUSER_WIDTH(1),
-      .TKEEP_ENABLE(AXIS_TKEEP_ENABLE)
-   ) mii_tx_axis_if();
-
-   AXIS_IF # (
-      .TDATA_WIDTH(AXIS_TDATA_WIDTH),
-      .TUSER_WIDTH(1),
-      .TKEEP_ENABLE(AXIS_TKEEP_ENABLE)
-   ) eth_rx_payload_if();
-
-   ETH_HEADER_IF eth_rx_header_if();
-
-   AXIS_IF # (
-      .TDATA_WIDTH(AXIS_TDATA_WIDTH),
-      .TUSER_WIDTH(1),
-      .TKEEP_ENABLE(AXIS_TKEEP_ENABLE)
-   ) mii_rx_axis_if();
-
    AXIS_IF # (
       .TDATA_WIDTH(AXIS_TDATA_WIDTH),
       .TUSER_WIDTH(1),
       .TKEEP_ENABLE(AXIS_TKEEP_ENABLE)
    ) eth_tx_payload_if();
 
+   AXIS_IF # (
+      .TDATA_WIDTH(AXIS_TDATA_WIDTH),
+      .TUSER_WIDTH(1),
+      .TKEEP_ENABLE(AXIS_TKEEP_ENABLE)
+   ) eth_rx_payload_if();
+   
    ETH_HEADER_IF eth_tx_header_if();
+
+   ETH_HEADER_IF eth_rx_header_if();
 
    UDP_TX_HEADER_IF udp_tx_header_if();
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if();
@@ -84,34 +77,6 @@ module eth_top # (
    var logic eth_tx_busy;
    var logic eth_rx_busy;
    var logic fifo_overflow;
-
-   eth_mac_mii_fifo_wrapper # (
-      .TARGET(TARGET)
-   ) eth_mac_mii_fifo_wrapper_inst (
-      .clk(clk),
-      .reset(reset),
-      .phy_reset(reset),
-
-      .tx_axis_if(mii_tx_axis_if.Slave),
-      .rx_axis_if(mii_rx_axis_if.Master),
-
-      .mii_if(mii_if),
-
-      .tx_error_underflow(),
-      .tx_fifo_overflow(),
-      .tx_fifo_bad_frame(),
-      .tx_fifo_good_frame(),
-      
-      .rx_error_bad_frame(),
-      .rx_error_bad_fcs(bad_fcs),
-      .rx_fifo_overflow(fifo_overflow),
-      .rx_fifo_bad_frame(),
-      .rx_fifo_good_frame(),
-
-      .cfg_ifg(8'd12),
-      .cfg_tx_enable(1'b1),
-      .cfg_rx_enable(1'b1)
-   );
 
    eth_axis_tx_wrapper # (
       .DATA_WIDTH(AXIS_TDATA_WIDTH),
@@ -189,15 +154,8 @@ module eth_top # (
       .clear_arp_cache(clear_arp_cache)
    );
 
-   UDP_TX_HEADER_IF udp_tx_header_if_mux [3]();
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_tx_payload_if_mux [3]();
-   UDP_RX_HEADER_IF udp_rx_header_if_mux [3]();
-   AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux [3]();
-
-   localparam bit [15:0] PORTS [3] = {1230, 1231, 1232};
-
    udp_switch # (
-      .PORT_COUNT(3),
+      .PORT_COUNT(PORT_COUNT),
       .PORTS(PORTS)
    ) udp_switch_inst (
       .clk(clk),
@@ -212,48 +170,6 @@ module eth_top # (
       .udp_tx_payload_if_source(udp_tx_payload_if),
       .udp_rx_header_if_sink(udp_rx_header_if),
       .udp_rx_payload_if_sink(udp_rx_payload_if)
-   );
-
-   udp_axis_master # (
-      .UDP_PORT(PORTS[0])
-   ) udp_axis_master_inst (
-      .clk(clk),
-      .reset(reset),
-      
-      .udp_tx_header_if(udp_tx_header_if_mux[0]),
-      .udp_tx_payload_if(udp_tx_payload_if_mux[0]),
-
-      .udp_rx_header_if(udp_rx_header_if_mux[0]),
-      .udp_rx_payload_if(udp_rx_payload_if_mux[0]),
-
-      .out_axis_if(axis_dac_if)
-   );
-
-   udp_loopback # (
-      .UDP_PORT(PORTS[1])
-   ) udp_loopback_inst (
-      .clk(clk),
-      .reset(reset),
-      .local_ip(local_ip),
-
-      .udp_tx_header_if(udp_tx_header_if_mux[1]),
-      .udp_tx_payload_if(udp_tx_payload_if_mux[1]),
-      .udp_rx_header_if(udp_rx_header_if_mux[1]),
-      .udp_rx_payload_if(udp_rx_payload_if_mux[1])
-   );
-
-   udp_spam # (
-      .UDP_PORT(PORTS[2])
-   ) udp_spam_inst (
-      .clk(clk),
-      .reset(reset),
-
-      .udp_tx_header_if(udp_tx_header_if_mux[2]),
-      .udp_tx_payload_if(udp_tx_payload_if_mux[2]),
-      .udp_rx_header_if(udp_rx_header_if_mux[2]),
-      .udp_rx_payload_if(udp_rx_payload_if_mux[2]),
-
-      .enable(screamer_enable)
    );
 
 endmodule
