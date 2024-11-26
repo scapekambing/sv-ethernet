@@ -81,7 +81,7 @@ module eth_top # (
       .clk(clk),
       .reset(reset),
 
-      .mii_axis_if(mii_tx_axis_if.Master),
+      .mii_axis_if(mii_tx_axis_if),
 
       .eth_tx_header_if(eth_tx_header_if.Slave),
       .eth_tx_payload_if(eth_tx_payload_if.Slave),
@@ -96,7 +96,7 @@ module eth_top # (
       .clk(clk),
       .reset(reset),
 
-      .mii_axis_if(mii_rx_axis_if.Slave),
+      .mii_axis_if(mii_rx_axis_if),
    
       .eth_rx_header_if(eth_rx_header_if.Master),
       .eth_rx_payload_if(eth_rx_payload_if.Master),
