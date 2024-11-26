@@ -71,11 +71,6 @@ module eth_top # (
 
    /* Modules */
 
-   var logic bad_fcs;
-   var logic eth_tx_busy;
-   var logic eth_rx_busy;
-   var logic fifo_overflow;
-
    eth_axis_tx_wrapper # (
       .DATA_WIDTH(AXIS_TDATA_WIDTH),
       .KEEP_ENABLE(AXIS_TKEEP_ENABLE)
