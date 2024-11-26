@@ -17,8 +17,6 @@ module eth_top # (
    input var logic clk,
    input var logic reset,
 
-   MII_IF.MAC mii_if,
-
    AXIS_IF.Slave mii_tx_axis_if,
    AXIS_IF.Master mii_rx_axis_if,
 
