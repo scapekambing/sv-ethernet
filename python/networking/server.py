@@ -10,7 +10,7 @@ class Server:
   
   def begin(self):
     self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    self.s.settimeout(10)
+    self.s.settimeout(20)
     self.s.bind((self.ip, self.port))
     print(f"Server started on {self.ip}:{self.port}")
     while True:
@@ -35,27 +35,34 @@ class Server:
     self.s.close()
 
   def on_message(self, message, addr):
-    if message == b"ACK":
+
+    cmd = message[0:4]
+    if cmd == b"ACK\x00":
       self.s.sendto(message, addr)
       print(f"ACK sent to {addr}")
-    elif message == b"ECHO":
+    elif cmd == b"ECHO":
       self.s.sendto(message, addr)
       self.on_echo(addr)
-    elif message == b"exit":
-      print("Server is shutting down...")
+    elif cmd == b"EXIT":
+      self.on_exit()
     else:
-      print(f"Command not recognized: {message}")
+      print(f"Command not recognized: {cmd}")
 
   def on_echo(self, addr):
     print("Starting ECHO server...")
-    message, addr = self.s.recvfrom(1024)
-    while message != b"exit":
+    # message, addr = self.s.recvfrom(1024)
+    while True:
       message, addr = self.s.recvfrom(1024)
       print(f"Message received: {message} from {addr}")
+      if message == b"exit":
+        break
       self.s.sendto(message, addr)
       print(f"Message sent: {message}")
     print("ECHO server is shutting down...")
-    
+
+  def on_exit(self):
+    print("EXIT command received.")
+      
 
 def main(ip, port):
   s = Server(ip, port)
