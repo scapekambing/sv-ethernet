@@ -14,6 +14,8 @@ class Client:
     self.s.sendto(self.data, (self.ip, self.port))
     print(f"Client sent {self.data} to {self.ip}:{self.port}")
     while True:
+      if self.data == b"EXIT":
+        break
       try: 
         message, addr = self.s.recvfrom(1024)
         print(f"Message received: {message} from {addr}")
@@ -35,9 +37,11 @@ class Client:
     self.s.close()
 
   def on_message(self, message, addr):
-    if message == b"ACK":
+    print("Message received: ", message)
+    cmd = message[0:4]
+    if cmd == b"ACK\x00":
       self.on_ack(addr)
-    elif message == b"ECHO":
+    elif cmd == b"ECHO":
       self.on_echo(addr)
     else:
       print("message received: ", message)
