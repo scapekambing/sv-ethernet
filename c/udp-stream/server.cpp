@@ -46,6 +46,7 @@ int main() {
           if (strncmp(buffer, "ACK", strlen("ACK")) == 0) {
                sendto(s, buffer, ret2, 0, (sockaddr *)&surc, size);
                printf("Sent: %s\n", buffer);
+               system("Start brave.exe https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUJcmljayByb2xl");
                break;
           };
           if (strncmp(buffer, "ECHO", strlen("ECHO")) == 0) {
