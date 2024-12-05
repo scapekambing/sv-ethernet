@@ -17,6 +17,8 @@ module eth_rgmii_top # (
    input var logic [31:0] subnet_mask,
    input var logic clear_arp_cache,
 
+   output var logic [7:0] udp_tx_payload,
+
    input var logic screamer_enable
 );
    localparam int AXIS_TDATA_WIDTH = 8;
@@ -176,8 +178,7 @@ module eth_rgmii_top # (
       .ip_tx_error_payload_early_termination(),
       .ip_tx_error_arp_failed(),
       .udp_rx_error_header_early_termination(),
-      .udp_rx_error_payload_early_termination(),
-      .udp_tx_error_payload_early_termination(),
+   .udp_rx_error_payload_early_termination(),
 
       .local_mac(local_mac),
       .local_ip(local_ip),
@@ -191,7 +192,7 @@ module eth_rgmii_top # (
    UDP_RX_HEADER_IF udp_rx_header_if_mux [1]();
    AXIS_IF # (.TUSER_WIDTH(1), .TKEEP_ENABLE(0)) udp_rx_payload_if_mux [1]();
 
-   localparam bit [15:0] PORTS [1] = {1230};
+   localparam bit [15:0] PORTS [1] = {1234};
 
    udp_switch # (
       .PORT_COUNT(1),
@@ -239,6 +240,8 @@ module eth_rgmii_top # (
       .udp_rx_header_if(udp_rx_header_if_mux[0]),
       .udp_rx_payload_if(udp_rx_payload_if_mux[0])
    );
+
+   assign udp_tx_payload = udp_tx_payload_if_mux[0].tdata;
 
 endmodule
 
