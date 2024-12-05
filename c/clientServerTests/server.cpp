@@ -26,7 +26,12 @@ int main() {
      // send the pkt
      while (true) {
           ret = recvfrom(s, buffer, len, 0, (sockaddr *)&surc, &size);
-          printf("Received: %s\n", buffer);
+          printf("Received string: %s\n", buffer);
+          printf("Received hex: ");
+          for (int i = 0; i < ret; ++i) {
+               printf("%02X ", buffer[i]);
+          }
+          printf("\n");
           buffer[ret] = '\0';
           if (strncmp(buffer, "EXIT", strlen("EXIT")) == 0) {
                break;

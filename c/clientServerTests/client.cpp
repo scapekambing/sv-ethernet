@@ -6,9 +6,8 @@
 #define len 1024
 
 int main() {
-     char pkt[len] = "Hello, World!";
-     char buffer[len] = "";
-     size_t pkt_length = strlen(pkt);
+     char pkt[len] = "\0";
+     char buffer[len] = "\0";
      sockaddr_in dest;
      WSAData data;
      WSAStartup(MAKEWORD(2, 2), &data);
@@ -38,7 +37,7 @@ int main() {
           }
           pkt[strcspn(pkt, "\n")] = '\0';
 
-          int ret = sendto(s, pkt, pkt_length, 0, (sockaddr *)NULL, sizeof(dest) );
+          int ret = sendto(s, pkt, strlen(pkt), 0, (sockaddr *)NULL, sizeof(dest) );
           if (ret == SOCKET_ERROR) {
           printf("Error: %d\n", WSAGetLastError());
           }

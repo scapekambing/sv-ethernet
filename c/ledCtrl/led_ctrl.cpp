@@ -6,18 +6,28 @@ uint8_t sv_ethernet::ledCtrl::get_num_leds(void)
     return num_leds;
 }
 
-void sv_ethernet::ledCtrl::set_num_leds(uint8_t n)
+void sv_ethernet::ledCtrl::set_num_leds(char *n)
 {
-    num_leds = n;
-    sprintf(pkt, "%d", num_leds);
-
-    // https://stackoverflow.com/questions/5029840/convert-char-to-int-in-c-and-c
+    pkt[strcspn(pkt, "\n")] = '\0';
+    num_leds = atoi(pkt);
 
     printf("Number of LEDs set to: %s\n", pkt);
-    sendto(s, "TEST", sizeof("TEST"), 0, (sockaddr *)&dest, sizeof(dest));
+    
+    // offset by to send pkt as raw hex
+    for (int i = 0; i < (int)(strlen(pkt)); i++) {
+        pkt[i] = pkt[i] - '0';
+    }
+    if (pkt[0] == '\0') {
+        printf("Sending 0x00\n");
+        sendto(s, pkt, strlen(pkt)+1, 0, (sockaddr *)&dest, sizeof(dest));    
+    }
+    else {
+        printf("Sending %s\n", pkt);
+        sendto(s, pkt, strlen(pkt), 0, (sockaddr *)&dest, sizeof(dest));    
+    }
 }
 
-uint8_t sv_ethernet::ledCtrl::write_num_leds(uint8_t n)
+uint8_t sv_ethernet::ledCtrl::write_num_leds(char *n)
 {
     set_num_leds(n);
     return 1; 
@@ -39,7 +49,6 @@ uint8_t sv_ethernet::ledCtrl::conn(void)
     connect(s, (sockaddr *)&dest, sizeof(dest));
     printf("Connected to server.\n");
     memset(pkt, 0, sizeof(pkt));
-    sendto(s, "ECHO", sizeof("ECHO"), 0, (sockaddr *)NULL, sizeof(dest));
 
     return 1;
 }
@@ -51,8 +60,6 @@ uint8_t sv_ethernet::ledCtrl::disconnect(void)
     return 1;
 }
 
-#define len 1024
-
 int main()
 {
 
@@ -63,12 +70,12 @@ int main()
         
         printf("Enter a string: ");
         if (fgets(led.pkt, sizeof(led.pkt), stdin) != NULL) {
-            printf("You entered: %s", led.pkt);
+            printf("Entered: %s\n", led.pkt);
             if (strncmp(led.pkt, "EXIT", strlen("EXIT")) == 0) {
                 printf("Exiting...\n");
                 break;
             }
-            if (led.write_num_leds(atoi(led.pkt))) {
+            if (led.write_num_leds(led.pkt)) {
                 printf("Number of LEDs: %d\n", led.get_num_leds());
             }
             else {
@@ -78,7 +85,6 @@ int main()
             printf("Error reading input.");
             break;
         }
-        led.pkt[strcspn(led.pkt, "\n")] = '\0';
      }
 
     led.disconnect();
