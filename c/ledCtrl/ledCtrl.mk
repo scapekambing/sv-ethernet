@@ -3,8 +3,8 @@ CFLAGS=-Wall
 LIBS = -lws2_32
 TARGET = target
 BUILD = build
-PROG = ledCtrl
-OBJS = $(addprefix $(BUILD)/, client.o server.o)
+PROG = led_ctrl
+OBJS = $(addprefix $(BUILD)/, led_ctrl.o)
 
 all: $(PROG)
 
