@@ -50,10 +50,11 @@ int main() {
                }
           }
 
+     }
+     printf("Exiting...\n");
      closesocket(s);
      WSACleanup();
 
      return 0;
-}
 }
 
