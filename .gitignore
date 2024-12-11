@@ -1,4 +1,4 @@
-python/workspace/modelsim
+python/workspace/modelsim/*
 python/__pycache__
 .vscode/*
 *.code-workspace
