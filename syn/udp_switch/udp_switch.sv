@@ -15,12 +15,14 @@ module udp_switch # (
 ) (
     input var logic clk,
     input var logic reset,
+    
+    input var logic [31:0]  local_ip,
 
     UDP_TX_HEADER_IF.Sink   udp_tx_header_if_sink [PORT_COUNT],
     AXIS_IF.Slave           udp_tx_payload_if_sink [PORT_COUNT],
 
-    UDP_RX_HEADER_IF.Source udp_rx_header_if_source [PORT_COUNT],
-    AXIS_IF.Master          udp_rx_payload_if_source [PORT_COUNT],
+    UDP_RX_HEADER_IF.Source udp_rx_header_if_source     [PORT_COUNT],
+    AXIS_IF.Master          udp_rx_payload_if_source    [PORT_COUNT],
 
     UDP_TX_HEADER_IF.Source udp_tx_header_if_source,
     AXIS_IF.Master          udp_tx_payload_if_source,
@@ -30,17 +32,25 @@ module udp_switch # (
 );
     var logic [$clog2(PORT_COUNT)-1:0] select;
 
-    var logic [15:0] port;
+    var logic drop;
 
+    var logic [15:0] port;
+    var logic [31:0] ip;
+    
     assign port = udp_rx_header_if_sink.dest_port;
+    assign ip = udp_rx_header_if_sink.ip_dest_ip;
 
     always_comb begin
         if (reset) begin
             select = '0;
+            drop = 1'b0;
         end else begin
             for (int i = 0; i < PORT_COUNT; i++) begin
-                if (port == PORTS[i]) begin
+                if (port==PORTS[i] && ip==local_ip) begin
                     select = i;
+                    drop = 1'b0;
+                end else begin
+                    drop = 1'b1;
                 end
             end
         end
@@ -56,7 +66,7 @@ module udp_switch # (
         .udp_rx_header_if_sink(udp_rx_header_if_sink),
         .udp_rx_payload_if_sink(udp_rx_payload_if_sink),
         .enable(1'b1),
-        .drop(1'b0),
+        .drop(drop),
         .select(select)
     );
 

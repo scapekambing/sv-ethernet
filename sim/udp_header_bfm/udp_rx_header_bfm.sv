@@ -254,6 +254,7 @@ class UDP_RX_HEADER_MASTER_BFM # ();
     task automatic simple_transfer(
         ref var logic           clk,
 
+        input var logic [31:0]  ip_dest_ip,
         input var logic [15:0]  source_port,
         input var logic [15:0]  dest_port,
         input var logic [15:0]  length,
@@ -275,7 +276,6 @@ class UDP_RX_HEADER_MASTER_BFM # ();
         logic [7:0]   ip_protocol = 0;
         logic [15:0]  ip_header_checksum = 0;
         logic [31:0]  ip_source_ip = {8'd192, 8'd168, 8'd1, 8'd152};
-        logic [31:0]  ip_dest_ip = {8'd192, 8'd168, 8'd1, 8'd111};
 
         transfer(
             clk,
