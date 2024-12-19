@@ -157,6 +157,8 @@ module eth_top # (
       .clk(clk),
       .reset(reset),
 
+      .local_ip(local_ip),
+
       .udp_tx_header_if_sink(udp_tx_header_if_mux),
       .udp_tx_payload_if_sink(udp_tx_payload_if_mux),
       .udp_rx_header_if_source(udp_rx_header_if_mux),
