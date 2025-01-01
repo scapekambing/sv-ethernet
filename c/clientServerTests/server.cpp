@@ -12,6 +12,7 @@ int main() {
      WSAStartup(MAKEWORD(2, 2), &data);
 
      int size = sizeof(dest);
+     int ret;
 
      dest.sin_family = AF_INET;
      dest.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -24,35 +25,41 @@ int main() {
 
      // send the pkt
      while (true) {
-          int ret2 = recvfrom(s, buffer, len, 0, (sockaddr *)&surc, &size);
-          printf("Received: %s\n", buffer);
-          buffer[ret2] = '\0';
+          ret = recvfrom(s, buffer, len, 0, (sockaddr *)&surc, &size);
+          printf("Received string: %s\n", buffer);
+          printf("Received hex: ");
+          for (int i = 0; i < ret; ++i) {
+               printf("%02X ", buffer[i]);
+          }
+          printf("\n");
+          buffer[ret] = '\0';
           if (strncmp(buffer, "EXIT", strlen("EXIT")) == 0) {
                break;
           }
-          if (strncmp(buffer, "ACK", strlen("ACK")) == 0) {
-               sendto(s, buffer, ret2, 0, (sockaddr *)&surc, size);
+          else if (strncmp(buffer, "ACK", strlen("ACK")) == 0) {
+               sendto(s, buffer, ret, 0, (sockaddr *)&surc, size);
                printf("Sent: %s\n", buffer);
                break;
-          };
-          if (strncmp(buffer, "ECHO", strlen("ECHO")) == 0) {
+          }
+          else if (strncmp(buffer, "ECHO", strlen("ECHO")) == 0) {
                while (true) {
-                    sendto(s, buffer, ret2, 0, (sockaddr *)&surc, size);
+                    sendto(s, buffer, ret, 0, (sockaddr *)&surc, size);
                     printf("Sent: %s\n", buffer);
 
-                    int ret3 = recvfrom(s, buffer, len, 0, (sockaddr *)&surc, &size);
+                    ret = recvfrom(s, buffer, len, 0, (sockaddr *)&surc, &size);
                     printf("Received: %s\n", buffer);
-                    buffer[ret3] = '\0';
+                    buffer[ret] = '\0';
                     if (strncmp(buffer, "EXIT", strlen("EXIT")) == 0) {
                          break;
                     }
                }
           }
 
+     }
+     printf("Exiting...\n");
      closesocket(s);
      WSACleanup();
 
      return 0;
-}
 }
 
