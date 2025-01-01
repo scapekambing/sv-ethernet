@@ -147,7 +147,7 @@ module eth_top # (
       .local_ip(local_ip),
       .gateway_ip(gateway_ip),
       .subnet_mask(subnet_mask),
-      . _cache(clear_arp_cache)
+      .clear_arp_cache(clear_arp_cache)
    );
 
    udp_switch # (
