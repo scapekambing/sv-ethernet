@@ -19,6 +19,9 @@ module udp_switch_tb ();
     parameter int PORT_COUNT = 2;
     parameter bit [15:0] PORTS [2] = {1234, 4321};
 
+    logic [31:0] local_ip       = {8'd192, 8'd168, 8'd1, 8'd111};
+    logic [31:0] broadcast_ip   = {8'd192, 8'd168, 8'd1, 8'd255};
+
     logic clk;
     logic reset;
 
@@ -40,6 +43,8 @@ module udp_switch_tb ();
     ) udp_switch_inst (
         .clk(clk),
         .reset(reset),
+
+        .local_ip(local_ip),
 
         .udp_tx_header_if_sink(udp_tx_header_if_sink),
         .udp_tx_payload_if_sink(udp_tx_payload_if_sink),
@@ -70,15 +75,30 @@ module udp_switch_tb ();
             @ (posedge clk);
         end
 
-        `TEST_CASE("no_match") begin
-            udp_rx_header_bfm.simple_transfer(clk, 8852, PORTS[1]+1, 12, 0);
+        `TEST_CASE("no_port_match_ip_match") begin
+            udp_rx_header_bfm.simple_transfer(clk, local_ip, 8852, PORTS[1]+1, 12, 0);
             `CHECK_EQUAL(udp_switch_inst.select, 0);
+            `CHECK_EQUAL(udp_switch_inst.drop, 1);
         end
 
-        `TEST_CASE("port_match") begin
-            udp_rx_header_bfm.simple_transfer(clk, 8852, PORTS[1], 12, 0);
+        `TEST_CASE("port_match_ip_match") begin
+            udp_rx_header_bfm.simple_transfer(clk, local_ip, 8852, PORTS[1], 12, 0);
             `CHECK_EQUAL(udp_switch_inst.select, 1);
+            `CHECK_EQUAL(udp_switch_inst.drop, 0);
         end
+
+        `TEST_CASE("no_port_match_no_ip_match") begin
+            udp_rx_header_bfm.simple_transfer(clk, broadcast_ip, 8852, PORTS[1]+1, 12, 0);
+            `CHECK_EQUAL(udp_switch_inst.select, 0);
+            `CHECK_EQUAL(udp_switch_inst.drop, 1);
+        end
+
+        `TEST_CASE("port_match_no_ip_match") begin
+            udp_rx_header_bfm.simple_transfer(clk, broadcast_ip, 8852, PORTS[1], 12, 0);
+            `CHECK_EQUAL(udp_switch_inst.select, 0);
+            `CHECK_EQUAL(udp_switch_inst.drop, 1);
+        end
+
     end
 
     `WATCHDOG(10us);
