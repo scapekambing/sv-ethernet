@@ -11,7 +11,8 @@ void sv_ethernet::ledCtrl::set_num_leds(char *n)
     pkt[strcspn(pkt, "\n")] = '\0';
     num_leds = atoi(pkt);
 
-    printf("Number of LEDs set to: %s\n", pkt);
+    char pkt_copy[sizeof(pkt)];
+    strncpy(pkt_copy, pkt, sizeof(pkt));
     
     // offset by to send pkt as raw hex
     for (int i = 0; i < (int)(strlen(pkt)); i++) {
@@ -22,7 +23,7 @@ void sv_ethernet::ledCtrl::set_num_leds(char *n)
         sendto(s, pkt, strlen(pkt)+1, 0, (sockaddr *)&dest, sizeof(dest));    
     }
     else {
-        printf("Sending %s\n", pkt);
+        printf("Sending %s\n", pkt_copy);
         sendto(s, pkt, strlen(pkt), 0, (sockaddr *)&dest, sizeof(dest));    
     }
 }
@@ -39,7 +40,7 @@ uint8_t sv_ethernet::ledCtrl::conn(void)
     WSAStartup(MAKEWORD(2, 2), &data);
     
     dest.sin_family = AF_INET;
-    dest.sin_addr.s_addr = inet_addr("127.0.0.1");
+    dest.sin_addr.s_addr = inet_addr("192.168.1.128");
     dest.sin_port = htons(1234);
 
     // create the socket object
